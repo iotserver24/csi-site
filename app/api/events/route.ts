@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { and, desc, eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import { db } from '../../../src/db/index'
 import { events } from '../../../src/db/schema'
 import { jsonError, requireRole, requireUser } from '../../../src/lib/server-auth'
+import { getCached, setCache } from '../../../src/lib/cache'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,9 +13,22 @@ export async function GET(request: NextRequest) {
       const context = await requireUser(request)
       requireRole(context, ['admin', 'coreMember'])
     }
+
+    const cacheKey = `events:${includeDrafts ? 'all' : 'published'}`
+    if (!includeDrafts) {
+      const cached = await getCached<{ events: typeof events.$inferSelect[] }>(cacheKey)
+      if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300', 'X-Cache': 'HIT' } })
+    }
+
     const conditions = includeDrafts ? undefined : eq(events.published, true)
     const rows = await db.select().from(events).where(conditions).orderBy(desc(events.createdAt))
-    return NextResponse.json({ events: rows })
+    const body = { events: rows }
+
+    if (!includeDrafts) await setCache(cacheKey, body, 30)
+
+    return NextResponse.json(body, {
+      headers: { 'Cache-Control': includeDrafts ? 'no-store' : 'public, s-maxage=60, stale-while-revalidate=300' },
+    })
   } catch (error) { return jsonError(error as Error) }
 }
 

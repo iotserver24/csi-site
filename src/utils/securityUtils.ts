@@ -55,7 +55,7 @@ export const generateTransactionId = () => {
 export const encodeData = (data: unknown) => {
   try {
     return btoa(JSON.stringify(data));
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -64,7 +64,7 @@ export const encodeData = (data: unknown) => {
 export const decodeData = (encodedData: string) => {
   try {
     return JSON.parse(atob(encodedData));
-  } catch (error) {
+  } catch {
     return null;
   }
 };

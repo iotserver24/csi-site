@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Info, CreditCard, Shield, Loader, Lock } from 'lucide-react'
+import { Info, CreditCard, Shield, Loader } from 'lucide-react'
 import { membershipPlans } from '../../data/membershipData'
 import type { AppUser, PaymentFormData } from '../../types'
 

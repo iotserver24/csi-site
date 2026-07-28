@@ -8,7 +8,7 @@ interface Props {
   setSelectedType: (type: string) => void
 }
 
-const EventsNavigator = ({ selectedYear, setSelectedYear, selectedType, setSelectedType }: Props) => {
+const EventsNavigator = ({ selectedYear, setSelectedYear, selectedType: _selectedType, setSelectedType: _setSelectedType }: Props) => {
   return (
     <section className="pb-8">
       <div className="container-custom">
@@ -18,7 +18,7 @@ const EventsNavigator = ({ selectedYear, setSelectedYear, selectedType, setSelec
           transition={{ delay: 0.1 }}
           className="flex gap-0 border-b border-gray-200 dark:border-gray-800 mb-8 overflow-x-auto no-scrollbar"
         >
-          {EVENT_YEARS.map((year, index) => (
+          {EVENT_YEARS.map((year) => (
             <button
               key={year}
               onClick={() => setSelectedYear(year)}

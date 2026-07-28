@@ -87,7 +87,7 @@ export const useSecureRecruit = () => {
     try {
       const freshData = await getUserData()
       if (freshData) userData = { ...user, ...freshData }
-    } catch (error) {
+    } catch {
     }
 
     const requiredFields = ['phone', 'branch', 'year', 'usn']
@@ -111,7 +111,7 @@ export const useSecureRecruit = () => {
     return true
   }
 
-  const pollMembershipStatus = async (userId: string) => {
+  const pollMembershipStatus = async (_userId: string) => {
     for (let i = 0; i < MAX_POLL_ATTEMPTS; i++) {
       await new Promise(r => setTimeout(r, POLL_INTERVAL))
       try {
@@ -119,7 +119,7 @@ export const useSecureRecruit = () => {
         if (freshData?.membership?.status === 'active') {
           return true
         }
-      } catch (error) {
+      } catch {
       }
     }
     return false
@@ -141,7 +141,7 @@ export const useSecureRecruit = () => {
       try {
         const freshData = await getUserData()
         if (freshData) userData = { ...user, ...freshData }
-      } catch (error) {
+      } catch {
       }
 
       const requiredFields = ['phone', 'branch', 'year', 'usn']
@@ -205,8 +205,8 @@ export const useSecureRecruit = () => {
           setLoading(false)
         }
       )
-    } catch (error) {
-      toast.error((error as Error).message || 'Something went wrong. Please try again.')
+    } catch (err) {
+      toast.error((err as Error).message || 'Something went wrong. Please try again.')
       setLoading(false)
     }
   }
@@ -220,7 +220,7 @@ export const useSecureRecruit = () => {
     try {
       const result = await signInWithGoogle()
       if (result) toast.success('Signed in successfully!')
-    } catch (error) {
+    } catch {
       toast.error('Failed to sign in. Please try again.')
     }
   }

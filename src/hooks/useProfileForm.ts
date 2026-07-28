@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { toast } from 'sonner'
-import type { ProfileData } from '../types'
+import type { ProfileData as _ProfileData } from '../types'
 
 interface ProfileFormData {
   name: string

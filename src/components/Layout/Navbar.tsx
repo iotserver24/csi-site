@@ -6,12 +6,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Menu, X, Home, Calendar, Users, User,
   LogIn, LogOut, Sun, Moon, Sparkles,
-  ChevronDown, ChevronRight, Shield, Bell
+  ChevronDown, ChevronRight, Shield
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -73,7 +74,7 @@ const Navbar: React.FC = () => {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group shrink-0">
               <div className="relative">
-                <img src="/csi-logo.png" alt="CSI" className="h-9 w-9 lg:h-10 lg:w-10 transition-all duration-300" />
+                <Image src="/csi-logo.png" alt="CSI" width={40} height={40} className="h-9 w-9 lg:h-10 lg:w-10 transition-all duration-300" />
               </div>
               <div className="hidden sm:block">
                 <p className="text-base lg:text-[17px] font-bold text-gray-900 dark:text-white leading-none">CSI NMAMIT</p>
@@ -148,9 +149,12 @@ const Navbar: React.FC = () => {
                                transition-all duration-200"
                   >
                     <div className="relative">
-                      <img
-                        src={user.photoURL ?? '/default-avatar.png'}
+                      <Image
+                        src={user.photoURL ?? '/default-avatar.svg'}
                         alt={user.name ?? ''}
+                        width={32}
+                        height={32}
+                        unoptimized
                         className={`h-8 w-8 rounded-full ring-2
                           ${isUserCoreMember() ? 'ring-yellow-400' : 'ring-cyber-blue/50'}`}
                       />
@@ -244,7 +248,8 @@ const Navbar: React.FC = () => {
                 )}
               </button>
               {user && (
-                <img src={user.photoURL ?? '/default-avatar.png'} alt={user.name ?? ''}
+                <Image src={user.photoURL ?? '/default-avatar.svg'} alt={user.name ?? ''}
+                  width={28} height={28} unoptimized
                   className={`h-7 w-7 rounded-full ring-2 ${isUserCoreMember() ? 'ring-yellow-400' : 'ring-cyber-blue/50'}`} />
               )}
               <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ml-1">
@@ -284,7 +289,8 @@ const Navbar: React.FC = () => {
               {/* User info */}
               {user && (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900">
-                  <img src={user.photoURL ?? '/default-avatar.png'} alt={user.name ?? ''}
+                  <Image src={user.photoURL ?? '/default-avatar.svg'} alt={user.name ?? ''}
+                    width={40} height={40} unoptimized
                     className={`h-10 w-10 rounded-full ring-2 ${isUserCoreMember() ? 'ring-yellow-400' : 'ring-cyber-blue/50'}`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-semibold text-gray-900 dark:text-white truncate">{user.name}</p>

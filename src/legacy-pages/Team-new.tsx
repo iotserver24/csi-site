@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Loader2, RefreshCw } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import TeamHero from '../components/Team/TeamHero'
 import TeamTabs from '../components/Team/TeamTabs'
 import FacultyGrid from '../components/Team/FacultyGrid'
@@ -39,7 +39,7 @@ const Team = () => {
       
       // Show info if some profiles are incomplete
       const incompleteProfiles = studentData.filter(
-        (member: TeamMember) => !member.imageSrc || member.imageSrc === '/default-avatar.png'
+        (member: TeamMember) => !member.imageSrc || member.imageSrc === '/default-avatar.svg'
       )
       
       if (incompleteProfiles.length > 0) {

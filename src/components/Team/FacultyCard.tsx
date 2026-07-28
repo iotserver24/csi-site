@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Mail } from 'lucide-react'
 import type { FacultyMember } from '../../types'
 
@@ -23,9 +24,12 @@ const FacultyCard = ({ member, index }: FacultyCardProps) => {
                       transition-all duration-300">
         {/* Profile Image */}
         <div className="relative mb-6">
-          <img
+          <Image
             src={member.image}
             alt={member.name}
+            width={112}
+            height={112}
+            unoptimized
             className="w-28 h-28 mx-auto rounded-full object-cover 
                        ring-2 ring-primary-400/40 dark:ring-primary-500/30
                        group-hover:ring-primary-500 transition-all duration-300"

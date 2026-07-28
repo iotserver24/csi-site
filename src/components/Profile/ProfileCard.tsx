@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import ProfileStats from './ProfileStats'
 import type { AppUser } from '../../types'
@@ -20,9 +21,12 @@ const ProfileCard = ({ user, membershipStatus, membershipType }: ProfileCardProp
                       dark:border-gray-800 rounded-2xl p-8 text-center">
         {/* Avatar */}
         <div className="relative inline-block mb-6">
-          <img
-            src={user.photoURL || '/default-avatar.png'}
+          <Image
+            src={user.photoURL || '/default-avatar.svg'}
             alt={user.name ?? ''}
+            width={96}
+            height={96}
+            unoptimized
             className="w-24 h-24 rounded-full object-cover ring-4 ring-gray-100 dark:ring-gray-900"
           />
           <div className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white dark:border-gray-950" />

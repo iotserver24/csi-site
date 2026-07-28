@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Home, ArrowLeft, Users, Lightbulb, Compass } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext' // make sure the path is correct
@@ -6,7 +5,7 @@ import { useTheme } from '../contexts/ThemeContext' // make sure the path is cor
 const NotFound = () => {
   const { isDark } = useTheme()
 
-  const inspirationalQuotes = [
+  const _inspirationalQuotes = [
     { text: "Every error is a step towards innovation", author: "CSI Philosophy" },
     { text: "The best debugging happens when you explore new paths", author: "Unknown Developer" },
     { text: "404: An opportunity to discover something better", author: "Tech Wisdom" }
@@ -19,7 +18,7 @@ const NotFound = () => {
     { label: 'Join CSI', path: '/recruit', icon: Compass, description: 'Begin journey' },
   ]
 
-  const handleNavigation = (path: string) => {
+  const handleNavigation = (_path: string) => {
     // console.log('Navigate to:', path)
   }
 

@@ -35,7 +35,8 @@ const Footer: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <img src="/csi-logo.png" alt="CSI" className="w-8 h-8" />
+               {/* eslint-disable-next-line @next/next/no-img-element */}
+               <img src="/csi-logo.png" alt="CSI" className="w-8 h-8" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">CSI NMAMIT</h3>

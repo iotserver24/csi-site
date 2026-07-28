@@ -140,7 +140,7 @@ const CoreMemberProfile = () => {
     }))
   }
 
-  const handleCancel = () => {
+  const _handleCancel = () => {
     setIsEditing(false)
     setSelectedImage(null)
     setPreviewUrl(null)

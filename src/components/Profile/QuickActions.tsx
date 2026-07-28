@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Download, CreditCard, X, Info } from 'lucide-react'
-import { toast } from 'sonner'
 
 const QuickActions: React.FC = () => {
   const [showCertModal, setShowCertModal] = useState<boolean>(false)

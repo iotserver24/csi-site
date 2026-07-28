@@ -16,6 +16,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.873.0",
     "@aws-sdk/s3-request-presigner": "^3.873.0",
+    "@upstash/redis": "^1.38.0",
     "cmdk": "^1.1.1",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.4",
@@ -33,12 +34,19 @@
     "sonner": "^2.0.7"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
+    "@next/eslint-plugin-next": "^16.2.12",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.17",
     "drizzle-kit": "^0.31.4",
+    "eslint": "9",
+    "eslint-config-next": "^16.2.12",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.65.0"
   }
 }

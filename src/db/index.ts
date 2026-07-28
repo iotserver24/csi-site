@@ -9,8 +9,10 @@ if (!process.env.DATABASE_URL) {
 }
 
 const client = globalForDb.__csiPostgres ?? postgres(process.env.DATABASE_URL || 'postgres://invalid:invalid@localhost/invalid', {
-  max: 5,
+  max: 10,
   prepare: false,
+  idle_timeout: 30,
+  connect_timeout: 10,
 })
 
 if (process.env.NODE_ENV !== 'production') globalForDb.__csiPostgres = client

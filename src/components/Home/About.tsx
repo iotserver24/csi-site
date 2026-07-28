@@ -1,12 +1,8 @@
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { useInView } from 'react-intersection-observer'
 import Tilt from 'react-parallax-tilt'
 import { 
-  Rocket, 
-  Target, 
-  Lightbulb, 
-  Users2, 
-  GraduationCap,
   Award
 } from 'lucide-react'
 
@@ -131,9 +127,11 @@ const About: React.FC = () => {
               className="relative"
             >
               <div className="relative rounded-2xl overflow-hidden">
-                <img
+                <Image
                   src="/team.jpg"
                   alt="CSI Team"
+                  width={600}
+                  height={400}
                   className="w-full h-auto rounded-2xl"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />

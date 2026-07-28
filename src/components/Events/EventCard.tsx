@@ -2,6 +2,7 @@
 // Drop-in replacement for src/components/Events/EventCard.jsx
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { Calendar, ArrowUpRight } from 'lucide-react'
 import type { Event } from '../../types'
 
@@ -28,7 +29,7 @@ interface Props {
   onClick?: (event: Event) => void
 }
 
-const EventCard = ({ event, index, onClick }: Props) => {
+const EventCard = ({ event, index: _index, onClick }: Props) => {
   const accent = (event.type && TYPE_ACCENTS[event.type as keyof typeof TYPE_ACCENTS]) || TYPE_ACCENTS.default
 
   return (
@@ -51,9 +52,12 @@ const EventCard = ({ event, index, onClick }: Props) => {
       >
         {/* Image with subtle zoom */}
         <div className="relative overflow-hidden aspect-[4/3]">
-          <img
+          <Image
             src={event.image || ''}
             alt={event.title}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            unoptimized
             className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
           />
           {/* Scrim */}

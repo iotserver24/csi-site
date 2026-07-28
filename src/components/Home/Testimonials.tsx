@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Quote, Star, ChevronLeft, ChevronRight } from "lucide-react";
 
-interface Testimonial {
+interface _Testimonial {
   id: number
   name: string
   role: string

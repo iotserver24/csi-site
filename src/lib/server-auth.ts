@@ -6,8 +6,8 @@ import { roles, users } from '../db/schema'
 import type { DecodedIdToken } from 'firebase-admin/auth'
 import type { InferSelectModel } from 'drizzle-orm'
 
-type UserRow = InferSelectModel<typeof users>
-type RoleRow = InferSelectModel<typeof roles>
+type _UserRow = InferSelectModel<typeof users>
+type _RoleRow = InferSelectModel<typeof roles>
 
 export async function requireUser(request: NextRequest) {
   const header = request.headers.get('authorization') || ''

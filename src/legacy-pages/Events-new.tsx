@@ -11,7 +11,6 @@ import { toast } from 'sonner'
 import type { Event, MockEvent } from '../types'
 
 const Events = () => {
-  const [showFilters, setShowFilters] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Event | MockEvent | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const router = useRouter()
@@ -23,8 +22,6 @@ const Events = () => {
     setSelectedYear,
     selectedType,
     setSelectedType,
-    searchTerm,
-    setSearchTerm
   } = useEvents('2025')
 
   // Check for event parameter in URL on mount
@@ -45,7 +42,7 @@ const Events = () => {
               setSelectedEvent(eventData)
               setIsModalOpen(true)
             }
-          } catch (error) {
+          } catch {
             toast.error('Event not found')
             router.replace('/events')
           }

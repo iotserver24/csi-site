@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { X, Mail, Phone, GraduationCap, Contact } from "lucide-react";
 import type { TeamMember } from "../../types";
 
@@ -41,9 +42,12 @@ const MemberModal = ({ member, onClose }: MemberModalProps) => {
 
           {/* Left Side - Image */}
           <div className="w-1/2 relative hidden md:block">
-            <img
+            <Image
               src={member.imageSrc}
               alt={member.name}
+              width={500}
+              height={640}
+              unoptimized
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />

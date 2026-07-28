@@ -158,6 +158,7 @@ const Highlights: React.FC = () => {
               onClick={() => openLightbox(index)}
             >
               <div className="relative w-full h-full overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={item.image}
                   alt={item.title}
@@ -229,6 +230,7 @@ const Highlights: React.FC = () => {
                 </button>
 
                 {/* Image */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selectedImage.image}
                   alt={selectedImage.title}

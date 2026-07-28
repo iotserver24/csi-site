@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react'
+import { useRef } from 'react'
+import Image from 'next/image'
 import { Camera, Sparkles, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { AppUser } from '../../types'
@@ -51,14 +52,17 @@ const ProfileAvatar = ({
   }
   
   // Determine which image to show
-  const displayImage = previewUrl || user?.photoURL || '/default-avatar.png'
+  const displayImage = previewUrl || user?.photoURL || '/default-avatar.svg'
   
   return (
     <div className="flex items-center space-x-4 mb-4 md:mb-0">
       <div className="relative">
-        <img
+        <Image
           src={displayImage}
           alt={user?.name || ''}
+          width={128}
+          height={128}
+          unoptimized
           className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 shadow-xl object-cover"
         />
         <button 

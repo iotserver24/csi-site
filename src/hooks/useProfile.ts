@@ -92,7 +92,7 @@ export const useProfile = () => {
         setIsEditing(false)
         toast.success('Profile updated successfully!')
       }
-    } catch (error) {
+    } catch {
       // console.error('Error updating profile:', error)
       toast.error('Failed to update profile')
     } finally {

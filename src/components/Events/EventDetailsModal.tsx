@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import {
-  X, Calendar, Clock, MapPin, Users, DollarSign,
+  X, Calendar, Clock, MapPin, DollarSign,
   User, AlertCircle, Share2, Copy, Loader,
   Users as TeamIcon, Hash, Plus
 } from 'lucide-react'
@@ -32,7 +33,7 @@ interface Props {
 }
 
 const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
-  const { user, signInWithGoogle, isProfileIncomplete, checkProfileCompletion } = useAuth()
+  const { user, signInWithGoogle, isProfileIncomplete } = useAuth()
   const [showTeamForm, setShowTeamForm] = useState(false)
   const [showJoinTeamForm, setShowJoinTeamForm] = useState(false)
   const [teamName, setTeamName] = useState('')
@@ -47,6 +48,7 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
 
   useEffect(() => {
     if (event && user && isOpen) checkUserTeam()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event, user, isOpen])
 
   useEffect(() => {
@@ -64,7 +66,7 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
         const registration = registrations[0]
         setUserTeam({ teamName: registration.teamName, teamCode: registration.teamCode, teamSize: registration.teamSize, members: registration.members || [] })
       }
-    } catch (e) { console.error(e) }
+    } catch { console.error('Failed to fetch teams') }
   }
 
   const fetchOtherTeams = async () => {
@@ -73,7 +75,7 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
     try {
       const { registrations } = await api.get(`/api/events/${event.id}/registrations?teams=true`) as { registrations?: TeamRegistration[] }
       setOtherTeams(registrations || [])
-    } catch (e) { setOtherTeams([]) }
+    } catch { setOtherTeams([]) }
     finally { setOtherTeamsLoading(false) }
   }
 
@@ -238,7 +240,7 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
           <div className="p-6 space-y-8">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="relative rounded-xl overflow-hidden ring-1 ring-black/10 dark:ring-white/10">
-                <img src={event.image || ''} alt={event.title} className="w-full h-56 md:h-full object-cover" />
+                <Image src={event.image || ''} alt={event.title} width={600} height={400} unoptimized className="w-full h-56 md:h-full object-cover" />
                 {!event.registrationsAvailable && (
                   <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold">Registrations Closed</div>
                 )}

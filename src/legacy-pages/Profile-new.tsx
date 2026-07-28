@@ -35,7 +35,7 @@ const Profile = () => {
         // toast('Please complete your profile to continue registration', { icon: '📝' })
       }
     }
-  }, [returnTo, profileLoading, profileData])
+  }, [returnTo, profileLoading, profileData, handleEdit])
 
   const handleSaveWrapper = async () => {
     const success = await handleSave()
@@ -45,10 +45,15 @@ const Profile = () => {
     return success
   }
 
+  // Redirect to home if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) router.push('/')
+  }, [authLoading, user, router])
+
   return (
     <>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {authLoading || profileLoading ? (
+        {authLoading || profileLoading || !user ? (
           <div className="min-h-[60vh] flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
@@ -59,7 +64,7 @@ const Profile = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - Profile Card & Quick Actions */}
               <div className="lg:col-span-1 space-y-6">
-                <ProfileCard user={user!} membershipStatus={user?.membership?.status || ''} membershipType={user?.membership?.type || null} />
+                {user && <ProfileCard user={user} membershipStatus={user.membership?.status || ''} membershipType={user.membership?.type || null} />}
                 <QuickActions />
               </div>
 
