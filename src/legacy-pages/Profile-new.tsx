@@ -8,6 +8,7 @@ import ProfileCard from '../components/Profile/ProfileCard'
 import ProfileForm from '../components/Profile/ProfileForm'
 import MembershipDetails from '../components/Profile/MembershipDetails'
 import QuickActions from '../components/Profile/QuickActions'
+import CertificatesSection from '../components/Profile/CertificatesSection'
 
 
 const Profile = () => {
@@ -105,6 +106,7 @@ const Profile = () => {
                   isEditing={isEditing}
                   onSave={handleSaveWrapper}
                 />
+                <CertificatesSection />
               </div>
             </div>
           </>

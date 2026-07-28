@@ -26,7 +26,7 @@ interface ProfileData {
   user: {
     id: string; name: string; email: string; photoURL: string; bio: string; usn: string;
     branch: string; year: string; college: string; github: string; linkedin: string;
-    membershipStatus: string; certificates: Array<{ title: string; date: string; issuer?: string }>;
+    membershipStatus: string; certificates: Array<{ title: string; date: string; issuer?: string; imageUrl?: string; eventName?: string }>;
     createdAt: string;
   }
   role: string
@@ -43,6 +43,7 @@ export default function SharedProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [certPreview, setCertPreview] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -80,7 +81,7 @@ export default function SharedProfilePage() {
   )
 
   const { user, events, role } = profile
-  const certificates = (user.certificates || []) as Array<{ title: string; date: string; issuer?: string }>
+  const certificates = (user.certificates || []) as Array<{ title: string; date: string; issuer?: string; imageUrl?: string; eventName?: string }>
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
@@ -183,16 +184,38 @@ export default function SharedProfilePage() {
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Award size={18} /> Certificates</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {certificates.map((cert, i) => (
-                <div key={i} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
-                  <h3 className="font-medium">{cert.title}</h3>
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => cert.imageUrl && setCertPreview(cert.imageUrl)}
+                  className="text-left p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-yellow-400/50 transition-colors overflow-hidden"
+                >
+                  {cert.imageUrl && (
+                    <div className="relative w-full aspect-[1.4] mb-3 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={cert.imageUrl} alt={cert.title} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <h3 className="font-medium">{cert.title || cert.eventName || 'Certificate'}</h3>
                   <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {cert.date && <span>{new Date(cert.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>}
                     {cert.issuer && <span>· {cert.issuer}</span>}
                   </div>
-                </div>
+                  {cert.imageUrl && <p className="text-xs text-yellow-500 mt-2">Tap to view full size</p>}
+                </button>
               ))}
             </div>
           </motion.div>
+        )}
+
+        {certPreview && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setCertPreview(null)}>
+            <div className="relative max-w-4xl w-full max-h-[90vh] bg-white dark:bg-gray-900 rounded-xl overflow-auto" onClick={e => e.stopPropagation()}>
+              <button type="button" onClick={() => setCertPreview(null)} className="absolute top-3 right-3 text-sm px-2 py-1 rounded bg-black/50 text-white">Close</button>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={certPreview} alt="Certificate" className="w-full h-auto" />
+            </div>
+          </div>
         )}
 
         {/* Empty state */}

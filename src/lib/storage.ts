@@ -13,6 +13,16 @@ export async function createUploadUrl(objectKey: string, contentType: string): P
   return getSignedUrl(client, command, { expiresIn: 300 })
 }
 
+/** Server-side put — preferred for admin bulk uploads (avoids browser CORS on R2). */
+export async function putObject(objectKey: string, body: Buffer | Uint8Array, contentType: string): Promise<void> {
+  await client.send(new PutObjectCommand({
+    Bucket: process.env.S3_BUCKET,
+    Key: objectKey,
+    Body: body,
+    ContentType: contentType,
+  }))
+}
+
 export async function deleteObject(objectKey: string): Promise<void> {
   await client.send(new DeleteObjectCommand({ Bucket: process.env.S3_BUCKET, Key: objectKey }))
 }

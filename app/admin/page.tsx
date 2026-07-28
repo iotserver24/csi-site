@@ -4,16 +4,24 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '../../src/lib/api-client'
+import { auth } from '../../src/lib/firebase-client'
 import { useAuth } from '../../src/contexts/AuthContext'
 
-type Tab = 'dashboard' | 'users' | 'events' | 'payments' | 'recruits' | 'core-members'
+type Tab = 'dashboard' | 'users' | 'events' | 'payments' | 'recruits' | 'core-members' | 'certificates'
 
 interface Stats { users: number; events: number; payments: number; recruits: number }
-interface UserRow { id: string; name?: string; email: string; photoURL?: string; role: string; createdAt: string; membershipStatus?: string }
+interface UserRow { id: string; name?: string; email: string; photoURL?: string; role: string; createdAt: string; membershipStatus?: string; usn?: string; certificates?: CertificateEntry[] }
 interface EventRow { id: string; title: string; date?: string; type?: string; category?: string; published: boolean; featured: boolean; participantCount: number; capacity?: number; createdAt: string }
 interface PaymentRow { id: string; orderId: string; amount: string; currency: string; status: string; userId?: string; createdAt: string }
 interface RecruitRow { id: string; name: string; email: string; phone?: string; branch?: string; year?: string; usn?: string; status: string; whyJoin?: string; createdAt: string }
 interface CoreMemberRow { id: string; email: string; name?: string; role: string; position?: string; quote?: string; image?: string; usn?: string; level: number; createdAt: string }
+interface CertificateEntry { title: string; date: string; issuer?: string; imageUrl?: string; eventName?: string; usn?: string }
+interface CertUserRow { id: string; name?: string; email: string; usn?: string; certificates: CertificateEntry[] }
+interface UploadResultRow {
+  fileName: string; usn: string; status: string; userName?: string | null; error?: string; publicUrl?: string
+}
+
+const MAX_CERT_BYTES = 10 * 1024 * 1024
 
 export default function AdminPage() {
   const router = useRouter()
@@ -43,6 +51,15 @@ export default function AdminPage() {
   const [showCoreMemberForm, setShowCoreMemberForm] = useState(false)
   const [coreMemberForm, setCoreMemberForm] = useState({ email: '', name: '', position: '', quote: '', image: '', usn: '', level: '10' })
 
+  const [certEventName, setCertEventName] = useState('')
+  const [certDate, setCertDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [certFiles, setCertFiles] = useState<File[]>([])
+  const [certUploading, setCertUploading] = useState(false)
+  const [certProgress, setCertProgress] = useState('')
+  const [certResults, setCertResults] = useState<UploadResultRow[]>([])
+  const [certUsers, setCertUsers] = useState<CertUserRow[]>([])
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
   useEffect(() => {
     if (loading) return
     if (!user) { router.replace('/admin/login'); return }
@@ -52,13 +69,14 @@ export default function AdminPage() {
 
   const loadData = async () => {
     try {
-      const [s, u, e, p, r, cm] = await Promise.all([
+      const [s, u, e, p, r, cm, certs] = await Promise.all([
         api.get('/api/admin/stats'),
         api.get('/api/admin/users'),
         api.get('/api/admin/events'),
         api.get('/api/admin/payments').catch(() => ({ payments: [] })),
         api.get('/api/admin/recruits').catch(() => ({ recruits: [] })),
         api.get('/api/admin/core-members').catch(() => ({ coreMembers: [] })),
+        api.get('/api/admin/certificates').catch(() => ({ users: [] })),
       ])
       setStats(s.stats as Stats)
       setUsers(u.users as UserRow[])
@@ -66,7 +84,75 @@ export default function AdminPage() {
       setPayments(p.payments as PaymentRow[])
       setRecruits(r.recruits as RecruitRow[])
       setCoreMembers((cm.coreMembers || []) as CoreMemberRow[])
+      setCertUsers((certs.users || []) as CertUserRow[])
     } catch (err: unknown) { setError(err instanceof Error ? err.message : 'Failed to load data') }
+  }
+
+  const onCertFilesSelected = (list: FileList | null) => {
+    if (!list) return
+    const next: File[] = []
+    const errors: string[] = []
+    for (const f of Array.from(list)) {
+      if (f.size > MAX_CERT_BYTES) {
+        errors.push(`${f.name}: exceeds 10MB`)
+        continue
+      }
+      const okType = f.type.startsWith('image/') || f.type === 'application/pdf'
+      if (!okType) {
+        errors.push(`${f.name}: only PNG/JPG/WEBP/PDF`)
+        continue
+      }
+      next.push(f)
+    }
+    if (errors.length) alert(errors.slice(0, 8).join('\n') + (errors.length > 8 ? `\n…+${errors.length - 8} more` : ''))
+    setCertFiles(next)
+    setCertResults([])
+  }
+
+  const uploadCertificates = async () => {
+    if (!certEventName.trim()) return alert('Enter an event name')
+    if (certFiles.length === 0) return alert('Select certificate files named like USN.png')
+    const token = auth?.currentUser ? await auth.currentUser.getIdToken() : null
+    if (!token) return alert('Not signed in — refresh and try again')
+
+    setCertUploading(true)
+    setCertProgress(`Uploading ${certFiles.length} file(s) via server → R2…`)
+    setCertResults([])
+    try {
+      // Multipart → Next API → R2 (avoids browser CORS on r2.cloudflarestorage.com)
+      const form = new FormData()
+      form.append('eventName', certEventName.trim())
+      form.append('date', certDate)
+      form.append('issuer', 'CSI NMAMIT')
+      for (const f of certFiles) form.append('files', f)
+
+      const res = await fetch('/api/admin/certificates', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      })
+      const body = await res.json().catch(() => ({})) as {
+        error?: string
+        assigned?: number
+        skipped?: number
+        results?: UploadResultRow[]
+      }
+      if (!res.ok) throw new Error(body.error || `Upload failed (${res.status})`)
+
+      const results = body.results || []
+      setCertResults(results)
+      setCertFiles([])
+      setCertProgress(`Done: ${body.assigned ?? 0} assigned, ${body.skipped ?? 0} skipped/issues`)
+
+      const refreshed = await api.get('/api/admin/certificates').catch(() => ({ users: [] }))
+      setCertUsers((refreshed.users || []) as CertUserRow[])
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Certificate upload failed'
+      alert(msg)
+      setCertProgress(msg)
+    } finally {
+      setCertUploading(false)
+    }
   }
 
   const filteredUsers = useMemo(() => {
@@ -151,8 +237,8 @@ export default function AdminPage() {
     setShowEventForm(true)
   }
 
-  if (loading) return <main className="min-h-[70vh] grid place-items-center bg-gray-950 text-white">Loading…</main>
-  if (error) return <main className="min-h-[70vh] grid place-items-center bg-gray-950 text-red-400">{error}</main>
+  if (loading) return <main className="min-h-[70vh] grid place-items-center bg-gray-950 text-white pt-24">Loading…</main>
+  if (error) return <main className="min-h-[70vh] grid place-items-center bg-gray-950 text-red-400 pt-24">{error}</main>
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: 'dashboard', label: 'Dashboard' },
@@ -161,11 +247,12 @@ export default function AdminPage() {
     { key: 'payments', label: 'Payments', count: payments.length },
     { key: 'recruits', label: 'Recruits', count: recruits.length },
     { key: 'core-members', label: 'Core Members', count: coreMembers.length },
+    { key: 'certificates', label: 'Certificates', count: certUsers.length },
   ]
 
   return (
-    <main className="min-h-screen bg-gray-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main className="min-h-screen bg-gray-950 text-white pt-24 pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <p className="text-sm text-gray-400">CSI NMAMIT</p>
@@ -498,6 +585,157 @@ export default function AdminPage() {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+
+        {tab === 'certificates' && (
+          <div className="space-y-6">
+            <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 space-y-4">
+              <div>
+                <h3 className="font-semibold text-lg">Bulk upload certificates</h3>
+                <p className="text-sm text-gray-400 mt-1">
+                  Uploads go through the server to Cloudflare R2 as{' '}
+                  <code className="text-blue-300">certificates/&#123;event&#125;/&#123;USN&#125;.ext</code>.
+                  Name each file after the student USN (e.g. <code className="text-blue-300">4NM21CS001.png</code>). Max 10MB each.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">Event name *</label>
+                  <input
+                    value={certEventName}
+                    onChange={e => setCertEventName(e.target.value)}
+                    placeholder="e.g. Hackathon 2025"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">Certificate date</label>
+                  <input
+                    type="date"
+                    value={certDate}
+                    onChange={e => setCertDate(e.target.value)}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 block mb-1">Certificate files (multiple)</label>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/webp,application/pdf"
+                  multiple
+                  onChange={e => onCertFilesSelected(e.target.files)}
+                  className="w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:text-sm hover:file:bg-blue-500"
+                />
+                {certFiles.length > 0 && (
+                  <p className="text-xs text-gray-400 mt-2">{certFiles.length} file(s) selected · total {(certFiles.reduce((s, f) => s + f.size, 0) / (1024 * 1024)).toFixed(1)} MB</p>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={uploadCertificates}
+                  disabled={certUploading}
+                  className="bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white text-sm px-4 py-2 rounded-lg"
+                >
+                  {certUploading ? 'Uploading…' : 'Upload & assign'}
+                </button>
+                {certProgress && <span className="text-sm text-gray-400">{certProgress}</span>}
+              </div>
+              {certResults.length > 0 && (
+                <div className="rounded-lg border border-gray-800 overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-800 text-left text-gray-400">
+                        <th className="px-3 py-2">File</th>
+                        <th className="px-3 py-2">USN</th>
+                        <th className="px-3 py-2">User</th>
+                        <th className="px-3 py-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {certResults.map((r, i) => (
+                        <tr key={`${r.fileName}-${i}`}>
+                          <td className="px-3 py-2 font-mono text-xs truncate max-w-[180px]">{r.fileName}</td>
+                          <td className="px-3 py-2 font-mono text-xs">{r.usn || '—'}</td>
+                          <td className="px-3 py-2 text-gray-400">{r.userName || '—'}</td>
+                          <td className="px-3 py-2">
+                            <span className={`text-xs px-2 py-0.5 rounded ${
+                              r.status === 'assigned' ? 'bg-green-500/20 text-green-400' :
+                              r.status === 'uploaded_no_user' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-red-500/20 text-red-400'
+                            }`}>{r.status}{r.error ? `: ${r.error}` : ''}</span>
+                            {r.publicUrl && (
+                              <button type="button" onClick={() => setPreviewUrl(r.publicUrl!)} className="ml-2 text-xs text-blue-400 hover:underline">view</button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-xl bg-gray-900 border border-gray-800 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-800 flex justify-between items-center">
+                <h3 className="font-semibold">Users with certificates ({certUsers.length})</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-800 text-left text-gray-400">
+                      <th className="px-4 py-3">User</th>
+                      <th className="px-4 py-3">USN</th>
+                      <th className="px-4 py-3">Certificates</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800">
+                    {certUsers.map(cu => (
+                      <tr key={cu.id} className="hover:bg-gray-800/50 align-top">
+                        <td className="px-4 py-3">
+                          <div className="font-medium">{cu.name || '—'}</div>
+                          <div className="text-xs text-gray-500">{cu.email}</div>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs">{cu.usn || '—'}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-2">
+                            {(cu.certificates || []).map((c, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => c.imageUrl && setPreviewUrl(c.imageUrl)}
+                                className="text-left rounded-lg border border-gray-700 bg-gray-800/60 px-2 py-1.5 max-w-[200px] hover:border-blue-500"
+                              >
+                                <div className="text-xs font-medium truncate">{c.title || c.eventName || 'Certificate'}</div>
+                                <div className="text-[10px] text-gray-500">{c.date ? new Date(c.date).toLocaleDateString() : ''}</div>
+                                {c.imageUrl && <div className="text-[10px] text-blue-400 mt-0.5">Open image</div>}
+                              </button>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {certUsers.length === 0 && (
+                      <tr><td colSpan={3} className="px-4 py-10 text-center text-gray-500">No certificates assigned yet. Upload a batch above.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {previewUrl && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setPreviewUrl(null)}>
+                <div className="relative max-w-4xl w-full max-h-[90vh] bg-gray-900 rounded-xl border border-gray-700 overflow-auto" onClick={e => e.stopPropagation()}>
+                  <button type="button" onClick={() => setPreviewUrl(null)} className="absolute top-3 right-3 text-sm text-gray-300 hover:text-white z-10 bg-black/50 px-2 py-1 rounded">Close</button>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={previewUrl} alt="Certificate" className="w-full h-auto" />
+                  <div className="p-3 text-center">
+                    <a href={previewUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-400 hover:underline">Open original</a>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -99,7 +99,7 @@ const EventCard = ({ event, index: _index, onClick }: Props) => {
           {(event.date || event.time) && (
             <div className="flex items-center gap-1.5 mt-4 text-[12px] text-gray-400 dark:text-gray-500">
               <Calendar size={12} />
-              <span>{formatDate(event.date?.toISOString() || '')}{event.time ? ` · ${event.time}` : ''}</span>
+              <span>{formatDate(event.date ? String(event.date) : '')}{event.time ? ` · ${event.time}` : ''}</span>
             </div>
           )}
         </div>
