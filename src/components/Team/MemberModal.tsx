@@ -52,10 +52,18 @@ const MemberModal = ({ member, onClose }: MemberModalProps) => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
             <div className="absolute bottom-6 left-6">
+              <div className="inline-block px-2.5 py-1 rounded-md bg-yellow-400/90 backdrop-blur-sm mb-2">
+                <span className="text-[11px] font-bold text-yellow-900 tracking-wide uppercase">
+                  {member.position || member.role}
+                </span>
+              </div>
               <h3 className="text-3xl font-bold text-white drop-shadow-md">
                 {member.name}
               </h3>
-              <p className="text-primary-300 font-medium">{member.role}</p>
+              <p className="text-primary-300 font-medium">{member.position || member.role}</p>
+              {member.quote && (
+                <p className="text-sm text-gray-300 mt-2 italic">&ldquo;{member.quote}&rdquo;</p>
+              )}
             </div>
           </div>
 
@@ -63,8 +71,16 @@ const MemberModal = ({ member, onClose }: MemberModalProps) => {
           <div className="w-full md:w-1/2 h-full overflow-y-auto p-6 space-y-6">
             {/* Mobile Heading (only visible on small screens) */}
             <div className="md:hidden text-center mb-4">
+              <div className="inline-block px-2.5 py-1 rounded-md bg-yellow-400/90 mb-2">
+                <span className="text-[11px] font-bold text-yellow-900 tracking-wide uppercase">
+                  {member.position || member.role}
+                </span>
+              </div>
               <h3 className="text-2xl font-bold text-white">{member.name}</h3>
-              <p className="text-primary-300">{member.role}</p>
+              <p className="text-primary-300">{member.position || member.role}</p>
+              {member.quote && (
+                <p className="text-sm text-gray-400 mt-2 italic">&ldquo;{member.quote}&rdquo;</p>
+              )}
             </div>
 
             {/* About */}

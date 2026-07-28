@@ -5,9 +5,12 @@ import type { TeamMember, AppUser } from '../types'
 const fallbackStudents: TeamMember[] = (teamData.studentTeamData || []).map((member: Record<string, unknown>, index: number) => ({ ...member, id: member.id || `student-${index}` } as TeamMember))
 
 export const fetchAllMembers = async (): Promise<TeamMember[]> => {
-  try { return (await api.get('/api/team')).students as TeamMember[] } catch { return fallbackStudents }
+  try {
+    const data = await api.get('/api/team')
+    return (data.coreMembers || data.students || []) as TeamMember[]
+  } catch { return fallbackStudents }
 }
-export const fetchCoreMembers = async (): Promise<TeamMember[]> => (await fetchAllMembers()).filter(member => member.isCoreMember)
+export const fetchCoreMembers = async (): Promise<TeamMember[]> => fetchAllMembers()
 export const fetchFacultyMembers = async () => teamData.facultyData || []
 export const transformUserToTeamMember = (user: AppUser): TeamMember => ({
   id: user.uid || user.id, name: user.name || 'Unknown', role: user.roleName || user.role || 'Member',

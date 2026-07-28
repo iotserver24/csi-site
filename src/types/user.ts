@@ -71,6 +71,8 @@ export interface TeamMember {
   email: string
   phone?: string
   isCoreMember: boolean
+  position?: string
+  quote?: string
   roleDetails?: { position?: string }
 }
 

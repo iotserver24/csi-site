@@ -1,22 +1,33 @@
 import { NextResponse } from 'next/server'
-import { desc, eq } from 'drizzle-orm'
+import { asc } from 'drizzle-orm'
 import { db } from '../../../src/db/index'
-import { coreMembers, users } from '../../../src/db/schema'
+import { coreMembers } from '../../../src/db/schema'
 import { getCached, setCache } from '../../../src/lib/cache'
 
 export async function GET() {
   try {
-    const cached = await getCached<{ students: unknown[] }>('team')
+    const cached = await getCached<{ coreMembers: unknown[] }>('team')
     if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300', 'X-Cache': 'HIT' } })
 
-    const members = await db.select({ user: users, core: coreMembers })
-      .from(users).leftJoin(coreMembers, eq(users.email, coreMembers.email)).orderBy(desc(users.createdAt))
+    const members = await db.select().from(coreMembers).orderBy(asc(coreMembers.level))
     const body = {
-      students: members.map(({ user, core }) => ({
-        ...user, id: user.firebaseUid, uid: user.firebaseUid, photoURL: user.photoUrl,
-        role: core?.role || 'Member', roleName: core?.role || 'Member', isCoreMember: Boolean(core),
-        permissions: core?.permissions || [], profile: { branch: user.branch || '', year: user.year || '', phone: user.phone || '', bio: user.bio || '' },
-        imageSrc: user.photoUrl || '/default-avatar.svg',
+      coreMembers: members.map(m => ({
+        id: m.id,
+        name: m.name || 'Unknown',
+        email: m.email,
+        usn: m.usn || '',
+        role: m.role,
+        position: m.position || m.role,
+        quote: m.quote || '',
+        image: m.image || '/default-avatar.svg',
+        level: m.level,
+        linkedin: '',
+        github: '',
+        branch: '',
+        year: '',
+        phone: '',
+        bio: '',
+        isCoreMember: true,
       })),
     }
 

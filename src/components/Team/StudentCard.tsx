@@ -11,7 +11,7 @@ interface StudentCardProps {
 }
 
 const StudentCard = ({ member, index, onClick }: StudentCardProps) => {
-  const displayRole = member?.roleDetails?.position || member?.role || 'Member'
+  const position = member.position || member.roleDetails?.position || member.role || 'Member'
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -34,14 +34,25 @@ const StudentCard = ({ member, index, onClick }: StudentCardProps) => {
                      transition-transform duration-500"
         />
 
-        {/* Always visible bottom strip */}
-        <div className="absolute bottom-0 inset-x-0 p-4 
-                        bg-gradient-to-t from-black/90 via-black/60 to-transparent">
-          <h3 className="text-sm font-semibold text-white leading-snug">{member.name}</h3>
-          <p className="text-xs text-yellow-400 font-medium mt-0.5">{displayRole}</p>
+        {/* Core member badge */}
+        <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md 
+                        bg-yellow-400/90 backdrop-blur-sm z-10">
+          <span className="text-[10px] font-bold text-yellow-900 tracking-wide uppercase">
+            {position}
+          </span>
         </div>
 
-        {/* Hover reveal — social links only */}
+        {/* Bottom strip — name + quote */}
+        <div className="absolute bottom-0 inset-x-0 p-4 
+                        bg-gradient-to-t from-black/90 via-black/70 to-transparent">
+          <h3 className="text-sm font-semibold text-white leading-snug">{member.name}</h3>
+          <p className="text-xs text-yellow-400 font-medium mt-0.5">{position}</p>
+          {member.quote && (
+            <p className="text-[11px] text-gray-300 mt-1.5 italic line-clamp-2">&ldquo;{member.quote}&rdquo;</p>
+          )}
+        </div>
+
+        {/* Hover reveal — social links */}
         <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100
                         transition-opacity duration-300 flex items-end justify-end p-4">
           <div className="flex gap-2">
@@ -61,15 +72,6 @@ const StudentCard = ({ member, index, onClick }: StudentCardProps) => {
             )}
           </div>
         </div>
-
-        {displayRole === 'President' && (
-          <div className="absolute top-3 left-3 px-2 py-1 rounded-md 
-                          bg-yellow-400/90 backdrop-blur-sm">
-            <span className="text-[10px] font-bold text-yellow-900 tracking-wide uppercase">
-              President
-            </span>
-          </div>
-        )}
       </div>
     </motion.div>
   )
