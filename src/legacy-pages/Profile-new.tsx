@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '../contexts/AuthContext'
 import { useProfileForm } from '../hooks/useProfileForm'
 import ProfileHero from '../components/Profile/ProfileHero'
@@ -21,8 +22,16 @@ const Profile = () => {
     handleInputChange
   } = useProfileForm()
 
+  const [copied, setCopied] = useState(false)
   const router = useRouter()
   const returnTo = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search).get('returnTo')
+
+  const shareProfile = () => {
+    const url = `${window.location.origin}/u/${user?.uid || user?.id || ''}`
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   // Auto-enable edit mode if returning from recruit page with incomplete profile
   useEffect(() => {
@@ -60,6 +69,18 @@ const Profile = () => {
         ) : (
           <>
             <ProfileHero />
+
+            {/* Share Profile Button */}
+            <div className="flex justify-end mb-4">
+              <Link href={`/u/${user?.uid || user?.id || ''}`} target="_blank"
+                className="flex items-center gap-2 text-sm px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+                View Public Profile ↗
+              </Link>
+              <button onClick={shareProfile}
+                className="ml-2 flex items-center gap-2 text-sm px-4 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-medium transition-colors">
+                {copied ? '✓ Copied!' : '📋 Copy Share Link'}
+              </button>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - Profile Card & Quick Actions */}
