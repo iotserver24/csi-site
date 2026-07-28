@@ -5,14 +5,9 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { Calendar, ArrowUpRight } from 'lucide-react'
 import type { Event } from '../../types'
+import { formatEventDate } from '../../utils/eventUtils'
 
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return ''
-  try {
-    const d = new Date(dateStr)
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-  } catch { return dateStr }
-}
+const formatDate = (dateStr: string) => formatEventDate(dateStr)
 
 // Subtle type accent color map
 const TYPE_ACCENTS = {

@@ -21,8 +21,9 @@ export async function GET(request: NextRequest) {
     }
 
     const conditions = includeDrafts ? undefined : eq(events.published, true)
-    const rows = await db.select().from(events).where(conditions).orderBy(desc(events.createdAt))
-    const body = { events: rows }
+    const rows = await db.select().from(events).where(conditions).orderBy(desc(events.year), desc(events.date), desc(events.createdAt))
+    const presented = rows.map(presentEvent)
+    const body = { events: presented }
 
     if (!includeDrafts) await setCache(cacheKey, body, 30)
 
@@ -30,6 +31,19 @@ export async function GET(request: NextRequest) {
       headers: { 'Cache-Control': includeDrafts ? 'no-store' : 'public, s-maxage=60, stale-while-revalidate=300' },
     })
   } catch (error) { return jsonError(error as Error) }
+}
+
+function presentEvent(row: typeof events.$inferSelect) {
+  const meta = (row.metadata && typeof row.metadata === 'object' ? row.metadata : {}) as Record<string, unknown>
+  return {
+    ...row,
+    venue: (meta.venue as string) || row.location || null,
+    time: (meta.time as string) || null,
+    entryFee: typeof meta.entryFee === 'number' ? meta.entryFee : Number(meta.entryFee) || 0,
+    organizers: (meta.organizers as string) || null,
+    brief: (meta.brief as string) || null,
+    dateRaw: (meta.dateRaw as string) || null,
+  }
 }
 
 export async function POST(request: NextRequest) {

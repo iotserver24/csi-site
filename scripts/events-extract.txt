@@ -1,0 +1,1489 @@
+CSI NMAMIT Events — full extract from https://www.csinmamit.in/events
+Source: Firebase Firestore csi-database-1598a / collection events
+Total events: 63
+================================================================================
+
+
+################################################################################
+  YEAR 2019  (2019-20)
+################################################################################
+
+--- Event 1: Android Development Workshop ---
+id:                    event_4
+title:                 Android Development Workshop
+year:                  2019
+date:                  2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233583/csi-events/2019/csi-events/2019/android_cover.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233583/csi-events/2019/csi-events/2019/android_cover.jpg
+originalImagePath:     /eventsimg/2019/android_cover.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 2: Cloud Computing ---
+id:                    event_7
+title:                 Cloud Computing
+year:                  2019
+date:                  2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233586/csi-events/2019/csi-events/2019/cloud.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233586/csi-events/2019/csi-events/2019/cloud.jpg
+originalImagePath:     /eventsimg/2019/cloud.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 3: CSI Inauguration Day ---
+id:                    event_1
+title:                 CSI Inauguration Day
+year:                  2019
+date:                  2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233591/csi-events/2019/csi-events/2019/inauguration_cover.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233591/csi-events/2019/csi-events/2019/inauguration_cover.jpg
+originalImagePath:     /eventsimg/2019/inauguration_cover.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 4: Inquizitive ---
+id:                    event_5
+title:                 Inquizitive
+year:                  2019
+date:                  2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233593/csi-events/2019/csi-events/2019/inquiz_cover.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233593/csi-events/2019/csi-events/2019/inquiz_cover.jpg
+originalImagePath:     /eventsimg/2019/inquiz_cover.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 5: Kahaani Mein Twist ---
+id:                    event_8
+title:                 Kahaani Mein Twist
+year:                  2019
+date:                  2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233594/csi-events/2019/csi-events/2019/kahani.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233594/csi-events/2019/csi-events/2019/kahani.jpg
+originalImagePath:     /eventsimg/2019/kahani.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 6: Lip Sync ---
+id:                    event_9
+title:                 Lip Sync
+year:                  2019
+date:                  2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233597/csi-events/2019/csi-events/2019/lipsync.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233597/csi-events/2019/csi-events/2019/lipsync.jpg
+originalImagePath:     /eventsimg/2019/lipsync.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 7: Lock The Logo ---
+id:                    event_3
+title:                 Lock The Logo
+year:                  2019
+date:                  2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233599/csi-events/2019/csi-events/2019/locklogo_cover.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233599/csi-events/2019/csi-events/2019/locklogo_cover.jpg
+originalImagePath:     /eventsimg/2019/locklogo_cover.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 8: Minute to Win it ---
+id:                    event_10
+title:                 Minute to Win it
+year:                  2019
+date:                  20 February 2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233600/csi-events/2019/csi-events/2019/minute.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233600/csi-events/2019/csi-events/2019/minute.jpg
+originalImagePath:     /eventsimg/2019/minute.jpg
+venue:                 LH 110, 112
+time:                  1:30 p.m.
+organizers:            CSI
+entryFee:              20
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           Come participate in CSI's event, Minute to Win It. Arrive in teams of 2 and power through 3 rounds of exciting games to claim the title of the ultimate champion. Winners shall be awarded exciting cash prizes. Here's to hoping we see you all in high spirits this Wednesday.
+brief:                 Come participate in CSI's event, Minute to Win It. Arrive in teams of 2 and power through 3 rounds of exciting games to claim the title of the ultimate champion. Winners shall be awarded exciting cash...
+
+--- Event 9: R Programming Workshop ---
+id:                    event_11
+title:                 R Programming Workshop
+year:                  2019
+date:                  2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233602/csi-events/2019/csi-events/2019/r_programming.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233602/csi-events/2019/csi-events/2019/r_programming.jpg
+originalImagePath:     /eventsimg/2019/r_programming.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 10: Talk on Ergonomics ---
+id:                    event_2
+title:                 Talk on Ergonomics
+year:                  2019
+date:                  2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233588/csi-events/2019/csi-events/2019/ergonomics_cover.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233588/csi-events/2019/csi-events/2019/ergonomics_cover.jpg
+originalImagePath:     /eventsimg/2019/ergonomics_cover.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 11: Web Designing Workshop ---
+id:                    event_63
+title:                 Web Designing Workshop
+year:                  2019
+date:                  10, 11 January 2019
+image:                 None
+cloudinaryUrl:         None
+originalImagePath:     None
+venue:                 Shambhavi Hall
+time:                  10 a.m. to 4 p.m.
+organizers:            CSI NMAMIT
+entryFee:              110
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           CSI brings to you another workshop this week on Web Designing. Web development is a very enticing field to work on, and we're here to help you figure out the basics of it. Come join us to learn about all the key aspects of an amazing web design. Resource person: Hashif TP, Founder and CEO, A S Designs Pvt Ltd. Attendance benefits shall be provided to all the participants. Students are required to bring their own laptops, with Adobe Dreamweaver pre-installed. Installation can be done in college with the guidance of us before the session starts. Make the best out of this opportunity and have a sneak peek into the most important part of web navigation.
+brief:                 CSI brings to you another workshop this week on Web Designing. Web development is a very enticing field to work on, and we're here to help you figure out the basics of it. Come join us to learn about ...
+
+--- Event 12: Web Development Workshop ---
+id:                    event_6
+title:                 Web Development Workshop
+year:                  2019
+date:                  2019
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233603/csi-events/2019/csi-events/2019/web_cover.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233603/csi-events/2019/csi-events/2019/web_cover.jpg
+originalImagePath:     /eventsimg/2019/web_cover.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+
+################################################################################
+  YEAR 2020  (2020-21)
+################################################################################
+
+--- Event 13: Alankaar ---
+id:                    event_20
+title:                 Alankaar
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233605/csi-events/2020/csi-events/2020/Alankar.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233605/csi-events/2020/csi-events/2020/Alankar.jpg
+originalImagePath:     /eventsimg/2020/Alankar.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 14: Android Webinar ---
+id:                    event_16
+title:                 Android Webinar
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233608/csi-events/2020/csi-events/2020/android_webinar.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233608/csi-events/2020/csi-events/2020/android_webinar.jpg
+originalImagePath:     /eventsimg/2020/android_webinar.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 15: Animate It! ---
+id:                    event_21
+title:                 Animate It!
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233610/csi-events/2020/csi-events/2020/animate.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233610/csi-events/2020/csi-events/2020/animate.jpg
+originalImagePath:     /eventsimg/2020/animate.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 16: Artice Writing ---
+id:                    event_14
+title:                 Artice Writing
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233629/csi-events/2020/csi-events/2020/pandamic_trough_you_eyes.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233629/csi-events/2020/csi-events/2020/pandamic_trough_you_eyes.jpg
+originalImagePath:     /eventsimg/2020/pandamic_trough_you_eyes.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 17: Azure ML Workshop ---
+id:                    event_13
+title:                 Azure ML Workshop
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233626/csi-events/2020/csi-events/2020/ML.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233626/csi-events/2020/csi-events/2020/ML.jpg
+originalImagePath:     /eventsimg/2020/ML.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 18: Codathon ---
+id:                    event_23
+title:                 Codathon
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233613/csi-events/2020/csi-events/2020/codathon.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233613/csi-events/2020/csi-events/2020/codathon.jpg
+originalImagePath:     /eventsimg/2020/codathon.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 19: Introduction to IOT ---
+id:                    event_12
+title:                 Introduction to IOT
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233621/csi-events/2020/csi-events/2020/IOT.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233621/csi-events/2020/csi-events/2020/IOT.jpg
+originalImagePath:     /eventsimg/2020/IOT.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 20: Memepathi ---
+id:                    event_18
+title:                 Memepathi
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233623/csi-events/2020/csi-events/2020/memepathi.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233623/csi-events/2020/csi-events/2020/memepathi.jpg
+originalImagePath:     /eventsimg/2020/memepathi.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 21: Quizdom ---
+id:                    event_22
+title:                 Quizdom
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233631/csi-events/2020/csi-events/2020/quizdom.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233631/csi-events/2020/csi-events/2020/quizdom.jpg
+originalImagePath:     /eventsimg/2020/quizdom.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 22: Vantage Point ---
+id:                    event_15
+title:                 Vantage Point
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233633/csi-events/2020/csi-events/2020/vantage.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233633/csi-events/2020/csi-events/2020/vantage.jpg
+originalImagePath:     /eventsimg/2020/vantage.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 23: Web Development Workshop ---
+id:                    event_17
+title:                 Web Development Workshop
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233635/csi-events/2020/csi-events/2020/webdev.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233635/csi-events/2020/csi-events/2020/webdev.jpg
+originalImagePath:     /eventsimg/2020/webdev.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 24: Web Piracy ---
+id:                    event_19
+title:                 Web Piracy
+year:                  2020
+date:                  2020
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233638/csi-events/2020/csi-events/2020/webpiracy.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233638/csi-events/2020/csi-events/2020/webpiracy.jpg
+originalImagePath:     /eventsimg/2020/webpiracy.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+
+################################################################################
+  YEAR 2021  (2021-22)
+################################################################################
+
+--- Event 25: Animix ---
+id:                    event_28
+title:                 Animix
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233650/csi-events/2021/csi-events/2021/animix.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233650/csi-events/2021/csi-events/2021/animix.jpg
+originalImagePath:     /eventsimg/2021/animix.png
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 26: Arcs Of Gaming ---
+id:                    event_31
+title:                 Arcs Of Gaming
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233654/csi-events/2021/csi-events/2021/arcs.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233654/csi-events/2021/csi-events/2021/arcs.jpg
+originalImagePath:     /eventsimg/2021/arcs.png
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 27: CSI Inauguration Day ---
+id:                    event_24
+title:                 CSI Inauguration Day
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233657/csi-events/2021/csi-events/2021/csii.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233657/csi-events/2021/csi-events/2021/csii.jpg
+originalImagePath:     /eventsimg/2021/csii.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 28: Debugged ---
+id:                    event_32
+title:                 Debugged
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233661/csi-events/2021/csi-events/2021/de.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233661/csi-events/2021/csi-events/2021/de.jpg
+originalImagePath:     /eventsimg/2021/de.png
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 29: Lock the Logo ---
+id:                    event_25
+title:                 Lock the Logo
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233667/csi-events/2021/csi-events/2021/gtl.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233667/csi-events/2021/csi-events/2021/gtl.jpg
+originalImagePath:     /eventsimg/2021/gtl.png
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 30: Memory Management Workshop ---
+id:                    event_30
+title:                 Memory Management Workshop
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233670/csi-events/2021/csi-events/2021/memory.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233670/csi-events/2021/csi-events/2021/memory.jpg
+originalImagePath:     /eventsimg/2021/memory.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 31: ML Workshop ---
+id:                    event_33
+title:                 ML Workshop
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233672/csi-events/2021/csi-events/2021/ml.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233672/csi-events/2021/csi-events/2021/ml.jpg
+originalImagePath:     /eventsimg/2021/ml.png
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 32: Placement Prep ---
+id:                    event_34
+title:                 Placement Prep
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233684/csi-events/2021/csi-events/2021/pp.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233684/csi-events/2021/csi-events/2021/pp.jpg
+originalImagePath:     /eventsimg/2021/pp.png
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 33: Product Development Bootcamp ---
+id:                    event_27
+title:                 Product Development Bootcamp
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233687/csi-events/2021/csi-events/2021/product.png
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233687/csi-events/2021/csi-events/2021/product.png
+originalImagePath:     /eventsimg/2021/product.png
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 34: QUADX ---
+id:                    event_26
+title:                 QUADX
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233690/csi-events/2021/csi-events/2021/quadx.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233690/csi-events/2021/csi-events/2021/quadx.jpg
+originalImagePath:     /eventsimg/2021/quadx.jpg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 35: Salesforce Workshop ---
+id:                    event_29
+title:                 Salesforce Workshop
+year:                  2021
+date:                  2021
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233693/csi-events/2021/csi-events/2021/salesforce.png
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233693/csi-events/2021/csi-events/2021/salesforce.png
+originalImagePath:     /eventsimg/2021/salesforce.png
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+
+################################################################################
+  YEAR 2022  (2022-23)
+################################################################################
+
+--- Event 36: Black Wall ---
+id:                    event_40
+title:                 Black Wall
+year:                  2022
+date:                  2022
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233709/csi-events/2022/csi-events/2022/e6.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233709/csi-events/2022/csi-events/2022/e6.jpg
+originalImagePath:     /eventsimg/2022/e6.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 37: Crypto Investment Worskhop ---
+id:                    event_38
+title:                 Crypto Investment Worskhop
+year:                  2022
+date:                  2022
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233699/csi-events/2022/csi-events/2022/e3.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233699/csi-events/2022/csi-events/2022/e3.jpg
+originalImagePath:     /eventsimg/2022/e3.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 38: CSI Inauguration Day ---
+id:                    event_35
+title:                 CSI Inauguration Day
+year:                  2022
+date:                  2022
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233704/csi-events/2022/csi-events/2022/e5.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233704/csi-events/2022/csi-events/2022/e5.jpg
+originalImagePath:     /eventsimg/2022/e5.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 39: Cybersecurity Awareness ---
+id:                    event_37
+title:                 Cybersecurity Awareness
+year:                  2022
+date:                  2022
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233697/csi-events/2022/csi-events/2022/e2.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233697/csi-events/2022/csi-events/2022/e2.jpg
+originalImagePath:     /eventsimg/2022/e2.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 40: How to be placement ready? ---
+id:                    event_36
+title:                 How to be placement ready?
+year:                  2022
+date:                  2022
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233695/csi-events/2022/csi-events/2022/e1.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233695/csi-events/2022/csi-events/2022/e1.jpg
+originalImagePath:     /eventsimg/2022/e1.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 41: Shutter Hunt ---
+id:                    event_39
+title:                 Shutter Hunt
+year:                  2022
+date:                  2022
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233702/csi-events/2022/csi-events/2022/e4.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233702/csi-events/2022/csi-events/2022/e4.jpg
+originalImagePath:     /eventsimg/2022/e4.jpeg
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+
+################################################################################
+  YEAR 2023  (2023-24)
+################################################################################
+
+--- Event 42: Byte Brawl ---
+id:                    event_47
+title:                 Byte Brawl
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233714/csi-events/2023/csi-events/2023/Byte Brawl.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233714/csi-events/2023/csi-events/2023/Byte Brawl.jpg
+originalImagePath:     /eventsimg/2023/Byte Brawl.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 43: Career Connect ---
+id:                    event_45
+title:                 Career Connect
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233716/csi-events/2023/csi-events/2023/Career Connect.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233716/csi-events/2023/csi-events/2023/Career Connect.jpg
+originalImagePath:     /eventsimg/2023/Career Connect.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 44: Classic Tech Charades 2.0 ---
+id:                    event_49
+title:                 Classic Tech Charades 2.0
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233784/csi-events/2024/csi-events/2024/Classic Tech Charades 2.0.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233784/csi-events/2024/csi-events/2024/Classic Tech Charades 2.0.jpg
+originalImagePath:     /eventsimg/2024/Classic Tech Charades 2.0.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 45: Data Dive ---
+id:                    event_50
+title:                 Data Dive
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233786/csi-events/2024/csi-events/2024/Data Dive.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233786/csi-events/2024/csi-events/2024/Data Dive.jpg
+originalImagePath:     /eventsimg/2024/Data Dive.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 46: Debug Your Soul ---
+id:                    event_42
+title:                 Debug Your Soul
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233737/csi-events/2023/csi-events/2023/Debug Your Soul.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233737/csi-events/2023/csi-events/2023/Debug Your Soul.jpg
+originalImagePath:     /eventsimg/2023/Debug Your Soul.webp
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 47: General Meeting ---
+id:                    event_51
+title:                 General Meeting
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233788/csi-events/2024/csi-events/2024/General Meeting.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233788/csi-events/2024/csi-events/2024/General Meeting.jpg
+originalImagePath:     /eventsimg/2024/General Meeting.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 48: Kickstart Cyber Security ---
+id:                    event_48
+title:                 Kickstart Cyber Security
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233790/csi-events/2024/csi-events/2024/Kickstart Cyber Security.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233790/csi-events/2024/csi-events/2024/Kickstart Cyber Security.jpg
+originalImagePath:     /eventsimg/2024/Kickstart Cyber Security.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 49: Logomania ---
+id:                    event_44
+title:                 Logomania
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233766/csi-events/2023/csi-events/2023/Logomania.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233766/csi-events/2023/csi-events/2023/Logomania.jpg
+originalImagePath:     /eventsimg/2023/Logomania.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 50: Mind Meld ---
+id:                    event_41
+title:                 Mind Meld
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233769/csi-events/2023/csi-events/2023/Mind Meld.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233769/csi-events/2023/csi-events/2023/Mind Meld.jpg
+originalImagePath:     /eventsimg/2023/Mind Meld.webp
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 51: Online Odyssey ---
+id:                    event_43
+title:                 Online Odyssey
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233774/csi-events/2023/csi-events/2023/Online Odyssey.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233774/csi-events/2023/csi-events/2023/Online Odyssey.jpg
+originalImagePath:     /eventsimg/2023/Online Odyssey.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 52: Shutter Spark ---
+id:                    event_46
+title:                 Shutter Spark
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233776/csi-events/2023/csi-events/2023/Shutter Spark.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233776/csi-events/2023/csi-events/2023/Shutter Spark.jpg
+originalImagePath:     /eventsimg/2023/Shutter Spark.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 53: Tech Security ---
+id:                    event_52
+title:                 Tech Security
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233792/csi-events/2024/csi-events/2024/Tech Security.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233792/csi-events/2024/csi-events/2024/Tech Security.jpg
+originalImagePath:     /eventsimg/2024/Tech Security.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 54: Technical Tresure Hunt ---
+id:                    event_53
+title:                 Technical Tresure Hunt
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233794/csi-events/2024/csi-events/2024/Technical Tresure Hunt.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233794/csi-events/2024/csi-events/2024/Technical Tresure Hunt.jpg
+originalImagePath:     /eventsimg/2024/Technical Tresure Hunt.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 55: The Entrepreneurial Drive ---
+id:                    event_54
+title:                 The Entrepreneurial Drive
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233796/csi-events/2024/csi-events/2024/The Entrepreneurial Drive.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233796/csi-events/2024/csi-events/2024/The Entrepreneurial Drive.jpg
+originalImagePath:     /eventsimg/2024/The Entrepreneurial Drive.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 56: Web Alchemy ---
+id:                    event_55
+title:                 Web Alchemy
+year:                  2023
+date:                  2023
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233797/csi-events/2024/csi-events/2024/Web Alchemy.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233797/csi-events/2024/csi-events/2024/Web Alchemy.jpg
+originalImagePath:     /eventsimg/2024/Web Alchemy.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+
+################################################################################
+  YEAR 2024  (2024-25)
+################################################################################
+
+--- Event 57: Classic Tech Charades 2.0 ---
+id:                    event_56
+title:                 Classic Tech Charades 2.0
+year:                  2024
+date:                  2024-02-10
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233784/csi-events/2024/csi-events/2024/Classic Tech Charades 2.0.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233784/csi-events/2024/csi-events/2024/Classic Tech Charades 2.0.jpg
+originalImagePath:     /eventsimg/2024/Classic Tech Charades 2.0.heic
+venue:                 Nitte
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                completed
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       [2, 3, 4]
+description:           Classic Tech Charades 2.0Classic Tech Charades 2.0
+brief:                 undefined...
+
+--- Event 58: Data Dive ---
+id:                    event_57
+title:                 Data Dive
+year:                  2024
+date:                  2024
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233786/csi-events/2024/csi-events/2024/Data Dive.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233786/csi-events/2024/csi-events/2024/Data Dive.jpg
+originalImagePath:     /eventsimg/2024/Data Dive.heic
+venue:                 Nitte
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           Data Dive
+brief:                 undefined...
+
+--- Event 59: General Meeting ---
+id:                    event_58
+title:                 General Meeting
+year:                  2024
+date:                  2024
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233788/csi-events/2024/csi-events/2024/General Meeting.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233788/csi-events/2024/csi-events/2024/General Meeting.jpg
+originalImagePath:     /eventsimg/2024/General Meeting.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 60: Tech Security ---
+id:                    event_59
+title:                 Tech Security
+year:                  2024
+date:                  2024
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233792/csi-events/2024/csi-events/2024/Tech Security.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233792/csi-events/2024/csi-events/2024/Tech Security.jpg
+originalImagePath:     /eventsimg/2024/Tech Security.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 61: Technical Tresure Hunt ---
+id:                    event_60
+title:                 Technical Tresure Hunt
+year:                  2024
+date:                  2024
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233794/csi-events/2024/csi-events/2024/Technical Tresure Hunt.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233794/csi-events/2024/csi-events/2024/Technical Tresure Hunt.jpg
+originalImagePath:     /eventsimg/2024/Technical Tresure Hunt.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 62: The Entrepreneurial Drive ---
+id:                    event_61
+title:                 The Entrepreneurial Drive
+year:                  2024
+date:                  2024
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233796/csi-events/2024/csi-events/2024/The Entrepreneurial Drive.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233796/csi-events/2024/csi-events/2024/The Entrepreneurial Drive.jpg
+originalImagePath:     /eventsimg/2024/The Entrepreneurial Drive.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+--- Event 63: Web Alchemy ---
+id:                    event_62
+title:                 Web Alchemy
+year:                  2024
+date:                  2024
+image:                 https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233797/csi-events/2024/csi-events/2024/Web Alchemy.jpg
+cloudinaryUrl:         https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233797/csi-events/2024/csi-events/2024/Web Alchemy.jpg
+originalImagePath:     /eventsimg/2024/Web Alchemy.heic
+venue:                 
+time:                  
+organizers:            CSI NMAMIT
+entryFee:              0
+category:              PREVIOUS
+type:                  TEAM
+status:                active
+published:             True
+featured:              False
+registrationsAvailable:False
+teamSizeOptions:       None
+description:           
+brief:                 undefined...
+
+
+================================================================================
+IMAGE LINKS ONLY (one per line: year | title | url)
+================================================================================
+2019    Android Development Workshop    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233583/csi-events/2019/csi-events/2019/android_cover.jpg
+2019    Cloud Computing    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233586/csi-events/2019/csi-events/2019/cloud.jpg
+2019    CSI Inauguration Day    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233591/csi-events/2019/csi-events/2019/inauguration_cover.jpg
+2019    Inquizitive    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233593/csi-events/2019/csi-events/2019/inquiz_cover.jpg
+2019    Kahaani Mein Twist    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233594/csi-events/2019/csi-events/2019/kahani.jpg
+2019    Lip Sync    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233597/csi-events/2019/csi-events/2019/lipsync.jpg
+2019    Lock The Logo    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233599/csi-events/2019/csi-events/2019/locklogo_cover.jpg
+2019    Minute to Win it    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233600/csi-events/2019/csi-events/2019/minute.jpg
+2019    R Programming Workshop    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233602/csi-events/2019/csi-events/2019/r_programming.jpg
+2019    Talk on Ergonomics    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233588/csi-events/2019/csi-events/2019/ergonomics_cover.jpg
+2019    Web Designing Workshop    
+2019    Web Development Workshop    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233603/csi-events/2019/csi-events/2019/web_cover.jpg
+2020    Alankaar    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233605/csi-events/2020/csi-events/2020/Alankar.jpg
+2020    Android Webinar    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233608/csi-events/2020/csi-events/2020/android_webinar.jpg
+2020    Animate It!    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233610/csi-events/2020/csi-events/2020/animate.jpg
+2020    Artice Writing    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233629/csi-events/2020/csi-events/2020/pandamic_trough_you_eyes.jpg
+2020    Azure ML Workshop    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233626/csi-events/2020/csi-events/2020/ML.jpg
+2020    Codathon    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233613/csi-events/2020/csi-events/2020/codathon.jpg
+2020    Introduction to IOT    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233621/csi-events/2020/csi-events/2020/IOT.jpg
+2020    Memepathi    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233623/csi-events/2020/csi-events/2020/memepathi.jpg
+2020    Quizdom    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233631/csi-events/2020/csi-events/2020/quizdom.jpg
+2020    Vantage Point    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233633/csi-events/2020/csi-events/2020/vantage.jpg
+2020    Web Development Workshop    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233635/csi-events/2020/csi-events/2020/webdev.jpg
+2020    Web Piracy    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233638/csi-events/2020/csi-events/2020/webpiracy.jpg
+2021    Animix    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233650/csi-events/2021/csi-events/2021/animix.jpg
+2021    Arcs Of Gaming    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233654/csi-events/2021/csi-events/2021/arcs.jpg
+2021    CSI Inauguration Day    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233657/csi-events/2021/csi-events/2021/csii.jpg
+2021    Debugged    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233661/csi-events/2021/csi-events/2021/de.jpg
+2021    Lock the Logo    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233667/csi-events/2021/csi-events/2021/gtl.jpg
+2021    Memory Management Workshop    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233670/csi-events/2021/csi-events/2021/memory.jpg
+2021    ML Workshop    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233672/csi-events/2021/csi-events/2021/ml.jpg
+2021    Placement Prep    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233684/csi-events/2021/csi-events/2021/pp.jpg
+2021    Product Development Bootcamp    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233687/csi-events/2021/csi-events/2021/product.png
+2021    QUADX    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233690/csi-events/2021/csi-events/2021/quadx.jpg
+2021    Salesforce Workshop    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233693/csi-events/2021/csi-events/2021/salesforce.png
+2022    Black Wall    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233709/csi-events/2022/csi-events/2022/e6.jpg
+2022    Crypto Investment Worskhop    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233699/csi-events/2022/csi-events/2022/e3.jpg
+2022    CSI Inauguration Day    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233704/csi-events/2022/csi-events/2022/e5.jpg
+2022    Cybersecurity Awareness    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233697/csi-events/2022/csi-events/2022/e2.jpg
+2022    How to be placement ready?    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233695/csi-events/2022/csi-events/2022/e1.jpg
+2022    Shutter Hunt    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233702/csi-events/2022/csi-events/2022/e4.jpg
+2023    Byte Brawl    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233714/csi-events/2023/csi-events/2023/Byte Brawl.jpg
+2023    Career Connect    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233716/csi-events/2023/csi-events/2023/Career Connect.jpg
+2023    Classic Tech Charades 2.0    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233784/csi-events/2024/csi-events/2024/Classic Tech Charades 2.0.jpg
+2023    Data Dive    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233786/csi-events/2024/csi-events/2024/Data Dive.jpg
+2023    Debug Your Soul    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233737/csi-events/2023/csi-events/2023/Debug Your Soul.jpg
+2023    General Meeting    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233788/csi-events/2024/csi-events/2024/General Meeting.jpg
+2023    Kickstart Cyber Security    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233790/csi-events/2024/csi-events/2024/Kickstart Cyber Security.jpg
+2023    Logomania    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233766/csi-events/2023/csi-events/2023/Logomania.jpg
+2023    Mind Meld    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233769/csi-events/2023/csi-events/2023/Mind Meld.jpg
+2023    Online Odyssey    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233774/csi-events/2023/csi-events/2023/Online Odyssey.jpg
+2023    Shutter Spark    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233776/csi-events/2023/csi-events/2023/Shutter Spark.jpg
+2023    Tech Security    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233792/csi-events/2024/csi-events/2024/Tech Security.jpg
+2023    Technical Tresure Hunt    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233794/csi-events/2024/csi-events/2024/Technical Tresure Hunt.jpg
+2023    The Entrepreneurial Drive    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233796/csi-events/2024/csi-events/2024/The Entrepreneurial Drive.jpg
+2023    Web Alchemy    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233797/csi-events/2024/csi-events/2024/Web Alchemy.jpg
+2024    Classic Tech Charades 2.0    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233784/csi-events/2024/csi-events/2024/Classic Tech Charades 2.0.jpg
+2024    Data Dive    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233786/csi-events/2024/csi-events/2024/Data Dive.jpg
+2024    General Meeting    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233788/csi-events/2024/csi-events/2024/General Meeting.jpg
+2024    Tech Security    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233792/csi-events/2024/csi-events/2024/Tech Security.jpg
+2024    Technical Tresure Hunt    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233794/csi-events/2024/csi-events/2024/Technical Tresure Hunt.jpg
+2024    The Entrepreneurial Drive    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233796/csi-events/2024/csi-events/2024/The Entrepreneurial Drive.jpg
+2024    Web Alchemy    https://res.cloudinary.com/dqnlrrcgb/image/upload/v1754233797/csi-events/2024/csi-events/2024/Web Alchemy.jpg
+

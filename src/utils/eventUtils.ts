@@ -14,11 +14,19 @@ export const getEventTypeColor = (type: string) => {
  * @param {string} date - The date string
  * @returns {string} - Formatted date
  */
-export const formatEventDate = (date: string | Date) => {
-  return new Date(date).toLocaleDateString('en-IN', {
+export const formatEventDate = (date: string | Date | null | undefined) => {
+  if (date == null || date === '') return ''
+  if (typeof date === 'string' && /^\d{4}$/.test(date.trim())) return date.trim()
+  const d = new Date(date)
+  if (Number.isNaN(d.getTime())) return String(date)
+  // Year-only placeholders were stored as Jan 1
+  if (d.getUTCMonth() === 0 && d.getUTCDate() === 1) {
+    return String(d.getUTCFullYear())
+  }
+  return d.toLocaleDateString('en-IN', {
     year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+    month: 'short',
+    day: 'numeric',
   })
 }
 
@@ -29,18 +37,23 @@ export const formatEventDate = (date: string | Date) => {
  * @param {string} selectedType - Selected event type
  * @returns {Array} - Filtered events
  */
-export const filterEvents = <T extends { title: string; description: string; type: string }>(events: T[], searchTerm: string, selectedType: string) => {
+export const filterEvents = <T extends { title: string; description?: string | null; type?: string | null }>(
+  events: T[],
+  searchTerm: string,
+  selectedType: string
+) => {
   let filtered = [...events]
 
   if (searchTerm) {
+    const q = searchTerm.toLowerCase()
     filtered = filtered.filter(event =>
-      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.description.toLowerCase().includes(searchTerm.toLowerCase())
+      (event.title || '').toLowerCase().includes(q) ||
+      (event.description || '').toLowerCase().includes(q)
     )
   }
 
   if (selectedType !== 'all') {
-    filtered = filtered.filter(event => event.type === selectedType)
+    filtered = filtered.filter(event => (event.type || '').toLowerCase() === selectedType.toLowerCase())
   }
 
   return filtered

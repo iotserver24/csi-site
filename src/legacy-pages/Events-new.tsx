@@ -22,7 +22,8 @@ const Events = () => {
     setSelectedYear,
     selectedType,
     setSelectedType,
-  } = useEvents('2025')
+    totalCount,
+  } = useEvents('2024')
 
   // Check for event parameter in URL on mount
   useEffect(() => {
@@ -69,7 +70,7 @@ const Events = () => {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
-      <EventsHero eventCount={filteredEvents.length} />
+      <EventsHero eventCount={filteredEvents.length} totalCount={totalCount} year={selectedYear} />
 
       {/* Filters Section */}
       <EventsFilter
