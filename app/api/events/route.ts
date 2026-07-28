@@ -35,14 +35,20 @@ export async function GET(request: NextRequest) {
 
 function presentEvent(row: typeof events.$inferSelect) {
   const meta = (row.metadata && typeof row.metadata === 'object' ? row.metadata : {}) as Record<string, unknown>
+  const capacity = row.capacity
+  const participantCount = row.participantCount || 0
+  const spotsLeft = capacity != null ? Math.max(0, capacity - participantCount) : null
   return {
     ...row,
     venue: (meta.venue as string) || row.location || null,
     time: (meta.time as string) || null,
     entryFee: typeof meta.entryFee === 'number' ? meta.entryFee : Number(meta.entryFee) || 0,
-    organizers: (meta.organizers as string) || null,
+    organizers: (meta.organizers as string) || 'CSI NMAMIT',
     brief: (meta.brief as string) || null,
     dateRaw: (meta.dateRaw as string) || null,
+    teamSizeOptions: Array.isArray(meta.teamSizeOptions) ? meta.teamSizeOptions : null,
+    allowViewOtherTeams: Boolean(meta.allowViewOtherTeams),
+    spotsLeft,
   }
 }
 

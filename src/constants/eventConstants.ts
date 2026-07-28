@@ -24,8 +24,8 @@ export const EVENT_TYPE_COLORS = {
   default: 'from-gray-500 to-gray-600'
 }
 
-// Academic-year labels are derived as year-(year+1). Only years that have events.
-export const EVENT_YEARS = ['2024', '2023', '2022', '2021', '2020', '2019']
+// Academic-year labels are derived as year-(year+1).
+export const EVENT_YEARS = ['2026', '2025', '2024', '2023', '2022', '2021', '2020', '2019']
 
 // Event status configurations
 export const EVENT_STATUS = {

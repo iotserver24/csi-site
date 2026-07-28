@@ -46,17 +46,31 @@ const EventCard = ({ event, index: _index, onClick }: Props) => {
                    transition-shadow duration-400"
       >
         {/* Image with subtle zoom */}
-        <div className="relative overflow-hidden aspect-[4/3]">
-          <Image
-            src={event.image || ''}
-            alt={event.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            unoptimized
-            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
-          />
+        <div className="relative overflow-hidden aspect-[4/3] bg-gray-100 dark:bg-gray-800">
+          {event.image ? (
+            <Image
+              src={event.image}
+              alt={event.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              unoptimized
+              className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+              <Image src="/csi-logo.png" alt="" width={48} height={48} className="opacity-40" />
+              <span className="text-[10px] uppercase tracking-wider text-gray-400">No image</span>
+            </div>
+          )}
           {/* Scrim */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          {event.registrationsAvailable && event.capacity != null && (
+            <div className="absolute top-3 left-3 px-2 py-1 rounded-md text-[10px] font-semibold bg-black/50 text-white backdrop-blur-sm">
+              {(event as Event & { spotsLeft?: number | null }).spotsLeft === 0
+                ? 'Full'
+                : `${(event as Event & { spotsLeft?: number | null }).spotsLeft ?? Math.max(0, event.capacity - (event.participantCount || 0))} left`}
+            </div>
+          )}
           {/* Arrow icon — top right */}
           <div
             className="absolute top-3 right-3 p-1.5 rounded-lg

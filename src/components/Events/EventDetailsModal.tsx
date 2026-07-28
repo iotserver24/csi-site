@@ -115,14 +115,15 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
     if (!user) { toast.error('Please login first'); return }
     if (!checkProfileComplete()) return
     if (!event.registrationsAvailable) { toast.error('Registrations are closed for this event'); return }
+    if (event.spotsLeft === 0) { toast.error('Event is full'); return }
     setLoading(true)
     try {
-      await api.post(`/api/events/${event.id}/registrations`, { type: 'individual' })
+      await api.post(`/api/events/${event.id}/registrations`, { type: 'individual', name: user.name || user.email })
       toast.success('Successfully registered for the event!')
       onClose()
     } catch (error) {
       console.error('Registration error:', error)
-      toast.error('Failed to register. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to register. Please try again.')
     } finally { setLoading(false) }
   }
 
@@ -131,21 +132,28 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
     if (!teamName.trim()) { toast.error('Please enter a team name'); return }
     if (!checkProfileComplete()) return
     if (!event.registrationsAvailable) { toast.error('Registrations are closed for this event'); return }
+    if (event.spotsLeft === 0) { toast.error('Event is full'); return }
     setLoading(true)
     try {
       const code = await generateUniqueTeamCode()
-      await api.post(`/api/events/${event.id}/registrations`, { type: 'team', teamName: teamName.trim(), teamCode: code, teamSize })
-      toast.success(`Team created! Your team code is: ${code}`)
-      setUserTeam({ teamName: teamName.trim(), teamCode: code, members: [] })
+      await api.post(`/api/events/${event.id}/registrations`, {
+        type: 'team',
+        teamName: teamName.trim(),
+        teamCode: code,
+        teamSize,
+        name: user.name || user.email,
+      })
+      toast.success(`Team created! Share invite code: ${code}`)
+      setUserTeam({
+        teamName: teamName.trim(),
+        teamCode: code,
+        teamSize,
+        members: [{ userId: user.uid || user.id, name: user.name || undefined, email: user.email || undefined, role: 'leader' }],
+      })
       setShowTeamForm(false)
     } catch (error: unknown) {
       console.error('Team creation error:', error)
-      let message = 'Failed to create team. Please try again.'
-      if (error) {
-        if (typeof error === 'object') message = (error as { message?: string; code?: string }).message || (error as { code?: string }).code || message
-        else message = String(error)
-      }
-      toast.error(message)
+      toast.error(error instanceof Error ? error.message : 'Failed to create team. Please try again.')
     } finally { setLoading(false) }
   }
 
@@ -240,7 +248,13 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
           <div className="p-6 space-y-8">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="relative rounded-xl overflow-hidden ring-1 ring-black/10 dark:ring-white/10">
-                <Image src={event.image || ''} alt={event.title} width={600} height={400} unoptimized className="w-full h-56 md:h-full object-cover" />
+                {event.image ? (
+                  <Image src={event.image} alt={event.title} width={600} height={400} unoptimized className="w-full h-56 md:h-full object-cover" />
+                ) : (
+                  <div className="w-full h-56 md:h-full min-h-[14rem] flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+                    <Image src="/csi-logo.png" alt="" width={64} height={64} className="opacity-40" />
+                  </div>
+                )}
                 {!event.registrationsAvailable && (
                   <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold">Registrations Closed</div>
                 )}
@@ -250,8 +264,16 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
                   {[
                     { icon: Calendar, color: 'text-primary-500', label: 'Date', value: event.date ? formatEventDate(event.date) : 'N/A' },
                     { icon: Clock, color: 'text-purple-500', label: 'Time', value: event.time || 'N/A' },
-                    { icon: MapPin, color: 'text-pink-500', label: 'Location', value: event.venue || 'N/A' },
+                    { icon: MapPin, color: 'text-pink-500', label: 'Location', value: event.venue || event.location || 'N/A' },
                     { icon: DollarSign, color: 'text-emerald-500', label: 'Entry Fee', value: `₹${event.entryFee || 0}` },
+                    ...(event.capacity != null
+                      ? [{
+                          icon: TeamIcon,
+                          color: 'text-cyan-500',
+                          label: 'Seats',
+                          value: `${event.participantCount || 0} / ${event.capacity}${(event as Event & { spotsLeft?: number | null }).spotsLeft != null ? ` · ${(event as Event & { spotsLeft?: number | null }).spotsLeft} left` : ''}`,
+                        }]
+                      : []),
                   ].map(({ icon: Icon, color, label, value }) => (
                     <div key={label} className="flex items-start gap-3">
                       <Icon className={`w-5 h-5 ${color} mt-0.5`} />
@@ -342,9 +364,14 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
                       <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-4">
                         <h3 className="font-semibold">Create Your Team</h3>
                         <div>
+                          <label className="block text-sm font-medium mb-2">Your name</label>
+                          <input type="text" value={user?.name || user?.email || ''} readOnly className="input-field opacity-80" />
+                        </div>
+                        <div>
                           <label className="block text-sm font-medium mb-2">Team Name</label>
                           <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} className="input-field" placeholder="Enter team name" />
                         </div>
+                        <p className="text-xs text-gray-500">You will get a 6-character invite code to share with teammates.</p>
                         <div>
                           <label className="block text-sm font-medium mb-2">Team Size</label>
                           <select value={teamSize} onChange={(e) => setTeamSize(parseInt(e.target.value))} className="input-field">

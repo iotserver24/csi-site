@@ -13,7 +13,8 @@ export interface Event extends Omit<DbEvent, 'metadata'> {
   brief?: string
   organizers?: string
   allowViewOtherTeams?: boolean
-  teamSizeOptions?: number[]
+  teamSizeOptions?: number[] | null
+  spotsLeft?: number | null
 }
 
 export interface ContactPerson {

@@ -17,6 +17,7 @@ export type CertificateEntry = {
   issuer?: string
   imageUrl?: string
   eventName?: string
+  eventId?: string
   usn?: string
   objectKey?: string
 }
@@ -69,12 +70,13 @@ export async function POST(request: NextRequest) {
     }
 
     const form = await request.formData()
+    const eventId = String(form.get('eventId') || '').trim() || undefined
     const eventName = String(form.get('eventName') || '').trim()
     const issuer = String(form.get('issuer') || 'CSI NMAMIT').trim() || 'CSI NMAMIT'
     const date = String(form.get('date') || '').trim() || new Date().toISOString().slice(0, 10)
 
     if (!eventName || eventName.length < 2) {
-      return NextResponse.json({ error: 'Event name is required' }, { status: 400 })
+      return NextResponse.json({ error: 'Event name is required (select or type an event)' }, { status: 400 })
     }
 
     const rawFiles = form.getAll('files').filter((f): f is File => typeof File !== 'undefined' && f instanceof File)
@@ -169,15 +171,18 @@ export async function POST(request: NextRequest) {
         }
 
         const existing = (Array.isArray(matched.certificates) ? matched.certificates : []) as CertificateEntry[]
-        const filtered = existing.filter(
-          c => !(c.eventName === eventName && normalizeUsn(c.usn || '') === usn)
-        )
+        const filtered = existing.filter(c => {
+          if (eventId && c.eventId === eventId && normalizeUsn(c.usn || '') === usn) return false
+          if (!eventId && c.eventName === eventName && normalizeUsn(c.usn || '') === usn) return false
+          return true
+        })
         const entry: CertificateEntry = {
           title: eventName,
           date,
           issuer,
           imageUrl: publicUrl,
           eventName,
+          eventId,
           usn,
           objectKey,
         }
@@ -208,6 +213,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       eventName,
+      eventId: eventId || null,
       eventSlug,
       assigned,
       skipped,

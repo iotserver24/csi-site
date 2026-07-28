@@ -11,11 +11,40 @@ type Tab = 'dashboard' | 'users' | 'events' | 'payments' | 'recruits' | 'core-me
 
 interface Stats { users: number; events: number; payments: number; recruits: number }
 interface UserRow { id: string; name?: string; email: string; photoURL?: string; role: string; createdAt: string; membershipStatus?: string; usn?: string; certificates?: CertificateEntry[] }
-interface EventRow { id: string; title: string; date?: string; type?: string; category?: string; published: boolean; featured: boolean; participantCount: number; capacity?: number; createdAt: string }
+interface EventRow {
+  id: string; title: string; date?: string; year?: number; type?: string; category?: string
+  description?: string; location?: string; image?: string
+  published: boolean; featured: boolean; registrationsAvailable?: boolean
+  participantCount: number; capacity?: number | null; spotsLeft?: number | null
+  time?: string; entryFee?: number; organizers?: string; teamSizeOptions?: number[] | null
+  allowViewOtherTeams?: boolean; brief?: string; createdAt: string
+}
 interface PaymentRow { id: string; orderId: string; amount: string; currency: string; status: string; userId?: string; createdAt: string }
 interface RecruitRow { id: string; name: string; email: string; phone?: string; branch?: string; year?: string; usn?: string; status: string; whyJoin?: string; createdAt: string }
 interface CoreMemberRow { id: string; email: string; name?: string; role: string; position?: string; quote?: string; image?: string; usn?: string; level: number; createdAt: string }
-interface CertificateEntry { title: string; date: string; issuer?: string; imageUrl?: string; eventName?: string; usn?: string }
+interface CertificateEntry { title: string; date: string; issuer?: string; imageUrl?: string; eventName?: string; eventId?: string; usn?: string }
+
+const emptyEventForm = () => ({
+  id: '',
+  title: '',
+  description: '',
+  date: '',
+  year: '2026',
+  type: 'INDIVIDUAL',
+  category: 'UPCOMING',
+  location: '',
+  image: '',
+  time: '',
+  entryFee: '0',
+  teamSizeOptions: '2,3,4',
+  organizers: 'CSI NMAMIT',
+  published: true,
+  featured: false,
+  registrationsAvailable: true,
+  allowViewOtherTeams: false,
+  capacity: '',
+  brief: '',
+})
 interface CertUserRow { id: string; name?: string; email: string; usn?: string; certificates: CertificateEntry[] }
 interface UploadResultRow {
   fileName: string; usn: string; status: string; userName?: string | null; error?: string; publicUrl?: string
@@ -43,7 +72,12 @@ export default function AdminPage() {
 
   const [editingEvent, setEditingEvent] = useState<EventRow | null>(null)
   const [showEventForm, setShowEventForm] = useState(false)
-  const [eventForm, setEventForm] = useState({ id: '', title: '', description: '', date: '', type: '', category: '', location: '', image: '', published: false, featured: false, capacity: '' })
+  const [eventForm, setEventForm] = useState(emptyEventForm)
+  const [eventYearFilter, setEventYearFilter] = useState('all')
+  const [eventSearch, setEventSearch] = useState('')
+
+  const [certEventId, setCertEventId] = useState('')
+  const [certEventSearch, setCertEventSearch] = useState('')
 
   const [recruitFilter, setRecruitFilter] = useState('all')
 
@@ -110,7 +144,9 @@ export default function AdminPage() {
   }
 
   const uploadCertificates = async () => {
-    if (!certEventName.trim()) return alert('Enter an event name')
+    const linked = events.find(e => e.id === certEventId)
+    const name = (linked?.title || certEventName).trim()
+    if (!name) return alert('Select an event or type an event name')
     if (certFiles.length === 0) return alert('Select certificate files named like USN.png')
     const token = auth?.currentUser ? await auth.currentUser.getIdToken() : null
     if (!token) return alert('Not signed in — refresh and try again')
@@ -119,9 +155,9 @@ export default function AdminPage() {
     setCertProgress(`Uploading ${certFiles.length} file(s) via server → R2…`)
     setCertResults([])
     try {
-      // Multipart → Next API → R2 (avoids browser CORS on r2.cloudflarestorage.com)
       const form = new FormData()
-      form.append('eventName', certEventName.trim())
+      form.append('eventName', name)
+      if (certEventId) form.append('eventId', certEventId)
       form.append('date', certDate)
       form.append('issuer', 'CSI NMAMIT')
       for (const f of certFiles) form.append('files', f)
@@ -167,13 +203,45 @@ export default function AdminPage() {
     return recruits.filter(r => recruitFilter === 'all' || r.status === recruitFilter)
   }, [recruits, recruitFilter])
 
+  const filteredEvents = useMemo(() => {
+    return events.filter(e => {
+      const yearOk = eventYearFilter === 'all' || String(e.year) === eventYearFilter
+      const q = eventSearch.toLowerCase()
+      const searchOk = !q || e.title.toLowerCase().includes(q) || e.id.toLowerCase().includes(q)
+      return yearOk && searchOk
+    })
+  }, [events, eventYearFilter, eventSearch])
+
+  const certEventOptions = useMemo(() => {
+    const q = certEventSearch.toLowerCase()
+    const list = [...events].sort((a, b) => (b.year || 0) - (a.year || 0))
+    if (!q) return list.slice(0, 40)
+    return list.filter(e => e.title.toLowerCase().includes(q) || e.id.toLowerCase().includes(q) || String(e.year).includes(q)).slice(0, 40)
+  }, [events, certEventSearch])
+
+  const downloadCsv = async (url: string, fallbackName: string) => {
+    const token = auth?.currentUser ? await auth.currentUser.getIdToken() : null
+    if (!token) return alert('Not signed in')
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      return alert((body as { error?: string }).error || 'Export failed')
+    }
+    const blob = await res.blob()
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = fallbackName
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
+
   const updateUserRole = async (userId: string, role: string) => {
     await api.patch(`/api/admin/users/${userId}`, { role, level: role === 'admin' ? 0 : role === 'coreMember' ? 10 : 99 })
     setEditingUser(null)
     loadData()
   }
 
-  const toggleEventField = async (eventId: string, field: 'published' | 'featured', value: boolean) => {
+  const toggleEventField = async (eventId: string, field: 'published' | 'featured' | 'registrationsAvailable', value: boolean) => {
     await api.put(`/api/admin/events/${eventId}`, { [field]: value })
     setEvents(prev => prev.map(e => e.id === eventId ? { ...e, [field]: value } : e))
   }
@@ -185,16 +253,41 @@ export default function AdminPage() {
   }
 
   const saveEvent = async () => {
-    const payload = { ...eventForm, capacity: eventForm.capacity ? Number(eventForm.capacity) : null }
-    if (editingEvent) {
-      await api.put(`/api/admin/events/${editingEvent.id}`, payload)
-    } else {
-      if (!payload.id || !payload.title) return alert('ID and title required')
-      await api.post('/api/admin/events', payload)
+    if (!eventForm.title.trim()) return alert('Title is required')
+    const payload = {
+      id: eventForm.id.trim() || undefined,
+      title: eventForm.title.trim(),
+      description: eventForm.description,
+      date: eventForm.date || null,
+      year: Number(eventForm.year) || 2026,
+      type: eventForm.type,
+      category: eventForm.category,
+      location: eventForm.location,
+      image: eventForm.image,
+      time: eventForm.time,
+      entryFee: Number(eventForm.entryFee) || 0,
+      teamSizeOptions: eventForm.teamSizeOptions,
+      organizers: eventForm.organizers,
+      published: eventForm.published,
+      featured: eventForm.featured,
+      registrationsAvailable: eventForm.registrationsAvailable,
+      allowViewOtherTeams: eventForm.allowViewOtherTeams,
+      capacity: eventForm.capacity === '' ? null : Number(eventForm.capacity),
+      brief: eventForm.brief,
     }
-    setShowEventForm(false); setEditingEvent(null)
-    setEventForm({ id: '', title: '', description: '', date: '', type: '', category: '', location: '', image: '', published: false, featured: false, capacity: '' })
-    loadData()
+    try {
+      if (editingEvent) {
+        await api.put(`/api/admin/events/${editingEvent.id}`, payload)
+      } else {
+        await api.post('/api/admin/events', payload)
+      }
+      setShowEventForm(false)
+      setEditingEvent(null)
+      setEventForm(emptyEventForm())
+      loadData()
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to save event')
+    }
   }
 
   const updateRecruitStatus = async (recruitId: string, status: string) => {
@@ -229,10 +322,32 @@ export default function AdminPage() {
 
   const startEditEvent = (event: EventRow) => {
     setEditingEvent(event)
+    let dateVal = ''
+    if (event.date) {
+      try {
+        dateVal = new Date(event.date).toISOString().slice(0, 16)
+      } catch { dateVal = '' }
+    }
     setEventForm({
-      id: event.id, title: event.title, description: '', date: event.date ? new Date(event.date).toISOString().slice(0, 16) : '',
-      type: event.type || '', category: event.category || '', location: '', image: '',
-      published: event.published, featured: event.featured, capacity: event.capacity?.toString() || ''
+      id: event.id,
+      title: event.title,
+      description: event.description || '',
+      date: dateVal,
+      year: String(event.year || 2026),
+      type: (event.type || 'INDIVIDUAL').toUpperCase(),
+      category: event.category || 'UPCOMING',
+      location: event.location || '',
+      image: event.image || '',
+      time: event.time || '',
+      entryFee: String(event.entryFee ?? 0),
+      teamSizeOptions: Array.isArray(event.teamSizeOptions) ? event.teamSizeOptions.join(',') : '2,3,4',
+      organizers: event.organizers || 'CSI NMAMIT',
+      published: event.published,
+      featured: event.featured,
+      registrationsAvailable: Boolean(event.registrationsAvailable),
+      allowViewOtherTeams: Boolean(event.allowViewOtherTeams),
+      capacity: event.capacity != null ? String(event.capacity) : '',
+      brief: event.brief || '',
     })
     setShowEventForm(true)
   }
@@ -372,74 +487,139 @@ export default function AdminPage() {
 
         {tab === 'events' && (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-gray-400">{events.length} events</p>
-              <button onClick={() => { setEditingEvent(null); setEventForm({ id: '', title: '', description: '', date: '', type: '', category: '', location: '', image: '', published: false, featured: false, capacity: '' }); setShowEventForm(true) }}
-                className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg transition-colors">+ New Event</button>
+            <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+              <div className="flex flex-col sm:flex-row gap-2 flex-1">
+                <input value={eventSearch} onChange={e => setEventSearch(e.target.value)} placeholder="Search events…"
+                  className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm" />
+                <select value={eventYearFilter} onChange={e => setEventYearFilter(e.target.value)}
+                  className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+                  <option value="all">All years</option>
+                  {[2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019].map(y => (
+                    <option key={y} value={String(y)}>{y}–{String(y + 1).slice(2)}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => downloadCsv('/api/admin/events/export?type=events', 'csi-events.csv')}
+                  className="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-sm px-3 py-2 rounded-lg">Export CSV</button>
+                <button type="button" onClick={() => { setEditingEvent(null); setEventForm(emptyEventForm()); setShowEventForm(true) }}
+                  className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg">+ New Event (2026–27)</button>
+              </div>
             </div>
+            <p className="text-sm text-gray-400">{filteredEvents.length} shown · {events.length} total · public view works without login; apply requires login</p>
+
             {showEventForm && (
               <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 space-y-3">
-                <h3 className="font-semibold">{editingEvent ? 'Edit Event' : 'Create Event'}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <input placeholder="Event ID (slug)" value={eventForm.id} onChange={e => setEventForm(f => ({ ...f, id: e.target.value }))} disabled={!!editingEvent}
-                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm disabled:opacity-50" />
-                  <input placeholder="Title" value={eventForm.title} onChange={e => setEventForm(f => ({ ...f, title: e.target.value }))}
-                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
+                <h3 className="font-semibold">{editingEvent ? 'Edit Event' : 'Create Event · 2026–27'}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <input placeholder="Title *" value={eventForm.title} onChange={e => setEventForm(f => ({ ...f, title: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm sm:col-span-2" />
+                  <input placeholder="ID (auto if empty)" value={eventForm.id} onChange={e => setEventForm(f => ({ ...f, id: e.target.value }))} disabled={!!editingEvent}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm disabled:opacity-50 font-mono text-xs" />
+                  <select value={eventForm.year} onChange={e => setEventForm(f => ({ ...f, year: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+                    {[2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019].map(y => <option key={y} value={y}>{y}–{String(y + 1).slice(2)}</option>)}
+                  </select>
                   <input type="datetime-local" value={eventForm.date} onChange={e => setEventForm(f => ({ ...f, date: e.target.value }))}
                     className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
-                  <input placeholder="Type (workshop/hackathon/etc)" value={eventForm.type} onChange={e => setEventForm(f => ({ ...f, type: e.target.value }))}
+                  <input placeholder="Display time (e.g. 2:00 PM)" value={eventForm.time} onChange={e => setEventForm(f => ({ ...f, time: e.target.value }))}
                     className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
-                  <input placeholder="Category" value={eventForm.category} onChange={e => setEventForm(f => ({ ...f, category: e.target.value }))}
+                  <input placeholder="Location / venue" value={eventForm.location} onChange={e => setEventForm(f => ({ ...f, location: e.target.value }))}
                     className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
-                  <input placeholder="Location" value={eventForm.location} onChange={e => setEventForm(f => ({ ...f, location: e.target.value }))}
+                  <select value={eventForm.type} onChange={e => setEventForm(f => ({ ...f, type: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+                    <option value="INDIVIDUAL">Individual</option>
+                    <option value="TEAM">Team</option>
+                  </select>
+                  <select value={eventForm.category} onChange={e => setEventForm(f => ({ ...f, category: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+                    <option value="UPCOMING">UPCOMING</option>
+                    <option value="PREVIOUS">PREVIOUS</option>
+                  </select>
+                  <input type="number" min={0} placeholder="Entry fee ₹" value={eventForm.entryFee} onChange={e => setEventForm(f => ({ ...f, entryFee: e.target.value }))}
                     className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
+                  <input type="number" min={1} placeholder="Capacity (blank = unlimited)" value={eventForm.capacity} onChange={e => setEventForm(f => ({ ...f, capacity: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
+                  {eventForm.type === 'TEAM' && (
+                    <input placeholder="Team sizes e.g. 2,3,4" value={eventForm.teamSizeOptions} onChange={e => setEventForm(f => ({ ...f, teamSizeOptions: e.target.value }))}
+                      className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
+                  )}
                   <input placeholder="Image URL" value={eventForm.image} onChange={e => setEventForm(f => ({ ...f, image: e.target.value }))}
-                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
-                  <input type="number" placeholder="Capacity" value={eventForm.capacity} onChange={e => setEventForm(f => ({ ...f, capacity: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm sm:col-span-2" />
+                  <input placeholder="Organizers" value={eventForm.organizers} onChange={e => setEventForm(f => ({ ...f, organizers: e.target.value }))}
                     className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <textarea placeholder="Description" value={eventForm.description} onChange={e => setEventForm(f => ({ ...f, description: e.target.value }))}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm h-24 resize-none" />
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={eventForm.published} onChange={e => setEventForm(f => ({ ...f, published: e.target.checked }))} className="rounded" /> Published</label>
+                <div className="flex flex-wrap gap-4">
+                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={eventForm.published} onChange={e => setEventForm(f => ({ ...f, published: e.target.checked }))} className="rounded" /> Published (public)</label>
                   <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={eventForm.featured} onChange={e => setEventForm(f => ({ ...f, featured: e.target.checked }))} className="rounded" /> Featured</label>
+                  <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={eventForm.registrationsAvailable} onChange={e => setEventForm(f => ({ ...f, registrationsAvailable: e.target.checked }))} className="rounded" /> Registrations open</label>
+                  {eventForm.type === 'TEAM' && (
+                    <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={eventForm.allowViewOtherTeams} onChange={e => setEventForm(f => ({ ...f, allowViewOtherTeams: e.target.checked }))} className="rounded" /> Allow view other teams</label>
+                  )}
                 </div>
+                <p className="text-xs text-gray-500">Users can browse without login. Applying requires Google login + complete profile. Team events use invite codes.</p>
                 <div className="flex gap-2">
-                  <button onClick={saveEvent} className="bg-green-600 hover:bg-green-500 text-white text-sm px-4 py-2 rounded-lg">{editingEvent ? 'Update' : 'Create'}</button>
-                  <button onClick={() => { setShowEventForm(false); setEditingEvent(null) }} className="bg-gray-700 hover:bg-gray-600 text-sm px-4 py-2 rounded-lg">Cancel</button>
+                  <button type="button" onClick={saveEvent} className="bg-green-600 hover:bg-green-500 text-white text-sm px-4 py-2 rounded-lg">{editingEvent ? 'Update' : 'Create'}</button>
+                  <button type="button" onClick={() => { setShowEventForm(false); setEditingEvent(null) }} className="bg-gray-700 hover:bg-gray-600 text-sm px-4 py-2 rounded-lg">Cancel</button>
                 </div>
               </div>
             )}
+
             <div className="rounded-xl bg-gray-900 border border-gray-800 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead><tr className="border-b border-gray-800 text-left text-gray-400">
-                    <th className="px-4 py-3">Event</th><th className="px-4 py-3">Date</th><th className="px-4 py-3">Type</th><th className="px-4 py-3">Published</th><th className="px-4 py-3">Featured</th><th className="px-4 py-3">Actions</th>
-                  </tr></thead>
+                  <thead>
+                    <tr className="border-b border-gray-800 text-left text-gray-400">
+                      <th className="px-4 py-3">Event</th>
+                      <th className="px-4 py-3">Year</th>
+                      <th className="px-4 py-3">Type</th>
+                      <th className="px-4 py-3">Seats</th>
+                      <th className="px-4 py-3">Regs</th>
+                      <th className="px-4 py-3">Published</th>
+                      <th className="px-4 py-3">Actions</th>
+                    </tr>
+                  </thead>
                   <tbody className="divide-y divide-gray-800">
-                    {events.map(e => (
+                    {filteredEvents.map(e => (
                       <tr key={e.id} className="hover:bg-gray-800/50">
-                        <td className="px-4 py-3 font-medium">{e.title}</td>
-                        <td className="px-4 py-3 text-gray-400">{e.date ? new Date(e.date).toLocaleDateString() : '—'}</td>
-                        <td className="px-4 py-3 text-gray-400">{e.type || '—'}</td>
                         <td className="px-4 py-3">
-                          <button onClick={() => toggleEventField(e.id, 'published', !e.published)}
+                          <div className="font-medium">{e.title}</div>
+                          <div className="text-[10px] text-gray-500 font-mono">{e.id}</div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-400">{e.year || '—'}</td>
+                        <td className="px-4 py-3 text-gray-400">{e.type || '—'}</td>
+                        <td className="px-4 py-3 text-gray-300">
+                          {e.participantCount || 0}
+                          {e.capacity != null ? ` / ${e.capacity}` : ' / ∞'}
+                          {e.spotsLeft != null && e.spotsLeft === 0 && <span className="ml-1 text-red-400 text-xs">full</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button type="button" onClick={() => toggleEventField(e.id, 'registrationsAvailable', !e.registrationsAvailable)}
+                            className={`text-xs px-2 py-1 rounded ${e.registrationsAvailable ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
+                            {e.registrationsAvailable ? 'Open' : 'Closed'}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button type="button" onClick={() => toggleEventField(e.id, 'published', !e.published)}
                             className={`text-xs px-2 py-1 rounded ${e.published ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
                             {e.published ? 'Live' : 'Draft'}
                           </button>
                         </td>
                         <td className="px-4 py-3">
-                          <button onClick={() => toggleEventField(e.id, 'featured', !e.featured)}
-                            className={`text-xs px-2 py-1 rounded ${e.featured ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-700 text-gray-400'}`}>
-                            {e.featured ? '★' : '☆'}
-                          </button>
-                        </td>
-                        <td className="px-4 py-3 flex gap-2">
-                          <button onClick={() => startEditEvent(e)} className="text-xs text-blue-400 hover:text-blue-300">Edit</button>
-                          <button onClick={() => deleteEvent(e.id)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                          <div className="flex flex-wrap gap-2">
+                            <button type="button" onClick={() => startEditEvent(e)} className="text-xs text-blue-400 hover:text-blue-300">Edit</button>
+                            <button type="button" onClick={() => downloadCsv(`/api/admin/events/export?type=registrations&eventId=${encodeURIComponent(e.id)}`, `regs-${e.id}.csv`)}
+                              className="text-xs text-yellow-400 hover:text-yellow-300">Export regs</button>
+                            <button type="button" onClick={() => deleteEvent(e.id)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                          </div>
                         </td>
                       </tr>
                     ))}
+                    {filteredEvents.length === 0 && (
+                      <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">No events match. Create one for 2026–27.</td></tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -600,14 +780,40 @@ export default function AdminPage() {
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-400 block mb-1">Event name *</label>
+                <div className="sm:col-span-2 space-y-2">
+                  <label className="text-xs text-gray-400 block">Link to event (search + select) *</label>
                   <input
-                    value={certEventName}
-                    onChange={e => setCertEventName(e.target.value)}
-                    placeholder="e.g. Hackathon 2025"
+                    value={certEventSearch}
+                    onChange={e => setCertEventSearch(e.target.value)}
+                    placeholder="Search events by title or year…"
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
                   />
+                  <select
+                    value={certEventId}
+                    onChange={e => {
+                      const id = e.target.value
+                      setCertEventId(id)
+                      const ev = events.find(x => x.id === id)
+                      if (ev) setCertEventName(ev.title)
+                    }}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                  >
+                    <option value="">— Select event —</option>
+                    {certEventOptions.map(ev => (
+                      <option key={ev.id} value={ev.id}>
+                        [{ev.year || '?'}] {ev.title}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    value={certEventName}
+                    onChange={e => { setCertEventName(e.target.value); if (!e.target.value) setCertEventId('') }}
+                    placeholder="Or type custom event name (if not in list)"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                  />
+                  {certEventId && (
+                    <p className="text-xs text-green-400">Linked to event id: <code>{certEventId}</code></p>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs text-gray-400 block mb-1">Certificate date</label>

@@ -23,7 +23,7 @@ const Events = () => {
     selectedType,
     setSelectedType,
     totalCount,
-  } = useEvents('2024')
+  } = useEvents('2026')
 
   // Check for event parameter in URL on mount
   useEffect(() => {
