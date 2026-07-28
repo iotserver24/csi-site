@@ -7,7 +7,8 @@ const fallbackStudents: TeamMember[] = (teamData.studentTeamData || []).map((mem
 export const fetchAllMembers = async (): Promise<TeamMember[]> => {
   try {
     const data = await api.get('/api/team')
-    return (data.coreMembers || data.students || []) as TeamMember[]
+    const raw = (data.coreMembers || data.students || []) as Record<string, unknown>[]
+    return raw.map(m => ({ ...m, imageSrc: (m.image as string) || '/default-avatar.svg' })) as TeamMember[]
   } catch { return fallbackStudents }
 }
 export const fetchCoreMembers = async (): Promise<TeamMember[]> => fetchAllMembers()

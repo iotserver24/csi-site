@@ -6,13 +6,14 @@ import Link from 'next/link'
 import { api } from '../../src/lib/api-client'
 import { useAuth } from '../../src/contexts/AuthContext'
 
-type Tab = 'dashboard' | 'users' | 'events' | 'payments' | 'recruits'
+type Tab = 'dashboard' | 'users' | 'events' | 'payments' | 'recruits' | 'core-members'
 
 interface Stats { users: number; events: number; payments: number; recruits: number }
 interface UserRow { id: string; name?: string; email: string; photoURL?: string; role: string; createdAt: string; membershipStatus?: string }
 interface EventRow { id: string; title: string; date?: string; type?: string; category?: string; published: boolean; featured: boolean; participantCount: number; capacity?: number; createdAt: string }
 interface PaymentRow { id: string; orderId: string; amount: string; currency: string; status: string; userId?: string; createdAt: string }
 interface RecruitRow { id: string; name: string; email: string; phone?: string; branch?: string; year?: string; usn?: string; status: string; whyJoin?: string; createdAt: string }
+interface CoreMemberRow { id: string; email: string; name?: string; role: string; position?: string; quote?: string; image?: string; usn?: string; level: number; createdAt: string }
 
 export default function AdminPage() {
   const router = useRouter()
@@ -25,6 +26,7 @@ export default function AdminPage() {
   const [events, setEvents] = useState<EventRow[]>([])
   const [payments, setPayments] = useState<PaymentRow[]>([])
   const [recruits, setRecruits] = useState<RecruitRow[]>([])
+  const [coreMembers, setCoreMembers] = useState<CoreMemberRow[]>([])
 
   const [userSearch, setUserSearch] = useState('')
   const [userRoleFilter, setUserRoleFilter] = useState('all')
@@ -37,6 +39,10 @@ export default function AdminPage() {
 
   const [recruitFilter, setRecruitFilter] = useState('all')
 
+  const [editingCoreMember, setEditingCoreMember] = useState<CoreMemberRow | null>(null)
+  const [showCoreMemberForm, setShowCoreMemberForm] = useState(false)
+  const [coreMemberForm, setCoreMemberForm] = useState({ email: '', name: '', position: '', quote: '', image: '', usn: '', level: '10' })
+
   useEffect(() => {
     if (loading) return
     if (!user) { router.replace('/admin/login'); return }
@@ -46,18 +52,20 @@ export default function AdminPage() {
 
   const loadData = async () => {
     try {
-      const [s, u, e, p, r] = await Promise.all([
+      const [s, u, e, p, r, cm] = await Promise.all([
         api.get('/api/admin/stats'),
         api.get('/api/admin/users'),
         api.get('/api/admin/events'),
         api.get('/api/admin/payments').catch(() => ({ payments: [] })),
         api.get('/api/admin/recruits').catch(() => ({ recruits: [] })),
+        api.get('/api/admin/core-members').catch(() => ({ coreMembers: [] })),
       ])
       setStats(s.stats as Stats)
       setUsers(u.users as UserRow[])
       setEvents(e.events as EventRow[])
       setPayments(p.payments as PaymentRow[])
       setRecruits(r.recruits as RecruitRow[])
+      setCoreMembers((cm.coreMembers || []) as CoreMemberRow[])
     } catch (err: unknown) { setError(err instanceof Error ? err.message : 'Failed to load data') }
   }
 
@@ -108,6 +116,31 @@ export default function AdminPage() {
     setRecruits(prev => prev.map(r => r.id === recruitId ? { ...r, status } : r))
   }
 
+  const saveCoreMember = async () => {
+    if (!coreMemberForm.email) return alert('Email required')
+    const payload = { ...coreMemberForm, level: Number(coreMemberForm.level) }
+    if (editingCoreMember) {
+      await api.put(`/api/admin/core-members/${editingCoreMember.id}`, payload)
+    } else {
+      await api.post('/api/admin/core-members', payload)
+    }
+    setShowCoreMemberForm(false); setEditingCoreMember(null)
+    setCoreMemberForm({ email: '', name: '', position: '', quote: '', image: '', usn: '', level: '10' })
+    loadData()
+  }
+
+  const deleteCoreMember = async (id: string) => {
+    if (!confirm('Remove this core member?')) return
+    await api.delete(`/api/admin/core-members/${id}`)
+    setCoreMembers(prev => prev.filter(c => c.id !== id))
+  }
+
+  const startEditCoreMember = (cm: CoreMemberRow) => {
+    setEditingCoreMember(cm)
+    setCoreMemberForm({ email: cm.email, name: cm.name || '', position: cm.position || '', quote: cm.quote || '', image: cm.image || '', usn: cm.usn || '', level: cm.level?.toString() || '10' })
+    setShowCoreMemberForm(true)
+  }
+
   const startEditEvent = (event: EventRow) => {
     setEditingEvent(event)
     setEventForm({
@@ -127,6 +160,7 @@ export default function AdminPage() {
     { key: 'events', label: 'Events', count: events.length },
     { key: 'payments', label: 'Payments', count: payments.length },
     { key: 'recruits', label: 'Recruits', count: recruits.length },
+    { key: 'core-members', label: 'Core Members', count: coreMembers.length },
   ]
 
   return (
@@ -395,6 +429,71 @@ export default function AdminPage() {
                       </tr>
                     ))}
                     {filteredRecruits.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No recruits</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'core-members' && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-gray-400">{coreMembers.length} core members</p>
+              <button onClick={() => { setEditingCoreMember(null); setCoreMemberForm({ email: '', name: '', position: '', quote: '', image: '', usn: '', level: '10' }); setShowCoreMemberForm(true) }}
+                className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg transition-colors">+ Add Core Member</button>
+            </div>
+            {showCoreMemberForm && (
+              <div className="rounded-xl bg-gray-900 border border-gray-800 p-5 space-y-3">
+                <h3 className="font-semibold">{editingCoreMember ? 'Edit Core Member' : 'Add Core Member'}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input placeholder="Email *" value={coreMemberForm.email} onChange={e => setCoreMemberForm(f => ({ ...f, email: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
+                  <input placeholder="Name" value={coreMemberForm.name} onChange={e => setCoreMemberForm(f => ({ ...f, name: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
+                  <input placeholder="Position (e.g. Technical Lead)" value={coreMemberForm.position} onChange={e => setCoreMemberForm(f => ({ ...f, position: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
+                  <input placeholder="USN" value={coreMemberForm.usn} onChange={e => setCoreMemberForm(f => ({ ...f, usn: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
+                  <input placeholder="Image URL" value={coreMemberForm.image} onChange={e => setCoreMemberForm(f => ({ ...f, image: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" />
+                  <select value={coreMemberForm.level} onChange={e => setCoreMemberForm(f => ({ ...f, level: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+                    <option value="0">Level 0 (Admin)</option>
+                    <option value="10">Level 10 (Core)</option>
+                    <option value="99">Level 99 (Member)</option>
+                  </select>
+                </div>
+                <textarea placeholder="Quote" value={coreMemberForm.quote} onChange={e => setCoreMemberForm(f => ({ ...f, quote: e.target.value }))}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm h-20 resize-none" />
+                <div className="flex gap-2">
+                  <button onClick={saveCoreMember} className="bg-green-600 hover:bg-green-500 text-white text-sm px-4 py-2 rounded-lg">{editingCoreMember ? 'Update' : 'Add'}</button>
+                  <button onClick={() => { setShowCoreMemberForm(false); setEditingCoreMember(null) }} className="bg-gray-700 hover:bg-gray-600 text-sm px-4 py-2 rounded-lg">Cancel</button>
+                </div>
+              </div>
+            )}
+            <div className="rounded-xl bg-gray-900 border border-gray-800 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b border-gray-800 text-left text-gray-400">
+                    <th className="px-4 py-3">Member</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">Position</th><th className="px-4 py-3">Level</th><th className="px-4 py-3">Actions</th>
+                  </tr></thead>
+                  <tbody className="divide-y divide-gray-800">
+                    {coreMembers.map(cm => (
+                      <tr key={cm.id} className="hover:bg-gray-800/50">
+                        <td className="px-4 py-3 font-medium">{cm.name || '—'}</td>
+                        <td className="px-4 py-3 text-gray-400">{cm.email}</td>
+                        <td className="px-4 py-3 text-gray-400">{cm.position || '—'}</td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2 py-1 rounded ${cm.level === 0 ? 'bg-red-500/20 text-red-400' : cm.level === 10 ? 'bg-blue-500/20 text-blue-400' : 'bg-gray-700 text-gray-400'}`}>L{cm.level}</span>
+                        </td>
+                        <td className="px-4 py-3 flex gap-2">
+                          <button onClick={() => startEditCoreMember(cm)} className="text-xs text-blue-400 hover:text-blue-300">Edit</button>
+                          <button onClick={() => deleteCoreMember(cm.id)} className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                        </td>
+                      </tr>
+                    ))}
+                    {coreMembers.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No core members</td></tr>}
                   </tbody>
                 </table>
               </div>

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, or } from 'drizzle-orm'
 import { db } from '../../../../src/db/index'
 import { users, eventRegistrations, events, roles } from '../../../../src/db/schema'
 import { getCached, setCache } from '../../../../src/lib/cache'
+
+const isUUID = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -11,19 +13,16 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     const cached = await getCached<Record<string, unknown>>(cacheKey)
     if (cached) return NextResponse.json(cached, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300', 'X-Cache': 'HIT' } })
 
-    // Find user by id or firebaseUid
-    const userRows = await db.select().from(users).where(eq(users.id, id)).limit(1)
-    const user = userRows[0]
-    if (!user) {
-      const byUid = await db.select().from(users).where(eq(users.firebaseUid, id)).limit(1)
-      if (!byUid[0]) return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-    const profile = user || (await db.select().from(users).where(eq(users.firebaseUid, id)).limit(1))[0]
+    const condition = isUUID(id)
+      ? or(eq(users.id, id), eq(users.firebaseUid, id))
+      : eq(users.firebaseUid, id)
 
-    // Get role
+    const profileRows = await db.select().from(users).where(condition).limit(1)
+    const profile = profileRows[0]
+    if (!profile) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
     const userRole = await db.select().from(roles).where(eq(roles.userId, profile.id)).limit(1)
 
-    // Get event registrations
     const registrations = await db.select({
       event: events,
       registration: eventRegistrations,

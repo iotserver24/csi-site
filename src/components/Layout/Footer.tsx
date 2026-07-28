@@ -103,7 +103,7 @@ const Footer: React.FC = () => {
               Subscribed successfully!
             </div>
           ) : (
-            <div className="relative">
+            <div className="relative" suppressHydrationWarning>
               <input
                 type="email"
                 value={email}
