@@ -15,6 +15,7 @@ function extractUsername(url: string, platform: 'github' | 'linkedin'): string {
   try {
     const u = new URL(url)
     const parts = u.pathname.split('/').filter(Boolean)
+    if (platform === 'linkedin') return parts[1] || parts[0] || ''
     return parts[0] || ''
   } catch {
     return url
