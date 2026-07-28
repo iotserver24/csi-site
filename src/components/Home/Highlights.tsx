@@ -1,260 +1,143 @@
+'use client'
+
 import { useState } from 'react'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { 
-  X, 
-  ChevronLeft, 
-  ChevronRight, 
-  Calendar,
-  Users,
-  MapPin,
-  Maximize2
-} from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react'
 
 interface HighlightItem {
   id: number
   image: string
   title: string
-  date: string
-  participants: string
-  location: string
 }
 
+const highlights: HighlightItem[] = [
+  { id: 1, image: '/highlights/event (1).jpg', title: 'Campus tech night' },
+  { id: 2, image: '/highlights/event (2).jpg', title: 'Hackathon floor' },
+  { id: 3, image: '/highlights/event (3).jpg', title: 'Workshop session' },
+  { id: 4, image: '/highlights/event (4).jpg', title: 'Hands-on lab' },
+  { id: 5, image: '/highlights/event (5).jpg', title: 'Guest talk' },
+  { id: 6, image: '/highlights/event (6).jpg', title: 'Team huddle' },
+  { id: 7, image: '/highlights/event (7).jpg', title: 'Demo day' },
+  { id: 8, image: '/highlights/event (8).jpg', title: 'Community meetup' },
+  { id: 9, image: '/highlights/event (9).jpg', title: 'Closing ceremony' },
+]
+
 const Highlights: React.FC = () => {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold: 0.1
-  })
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.08 })
+  const [currentIndex, setCurrentIndex] = useState<number | null>(null)
 
-  const [selectedImage, setSelectedImage] = useState<HighlightItem | null>(null)
-  const [currentIndex, setCurrentIndex] = useState<number>(0)
+  const open = (index: number) => setCurrentIndex(index)
+  const close = () => setCurrentIndex(null)
+  const prev = () => setCurrentIndex(i => (i === null ? 0 : (i + highlights.length - 1) % highlights.length))
+  const next = () => setCurrentIndex(i => (i === null ? 0 : (i + 1) % highlights.length))
 
-  const highlights: HighlightItem[] = [
-    {
-      id: 1,
-      image: '/highlights/event (1).jpg',
-      title: 'Tech Symposium 2024',
-      date: 'March 15, 2024',
-      participants: '200+',
-      location: 'NMAMIT Auditorium'
-    },
-    {
-      id: 2,
-      image: '/highlights/event (2).jpg',
-      title: 'Hackathon 2024',
-      date: 'February 20, 2024',
-      participants: '150+',
-      location: 'Computer Lab'
-    },
-    {
-      id: 3,
-      image: '/highlights/event (3).jpg',
-      title: 'AI Workshop',
-      date: 'January 10, 2024',
-      participants: '100+',
-      location: 'Seminar Hall'
-    },
-    {
-      id: 4,
-      image: '/highlights/event (4).jpg',
-      title: 'Web Dev Bootcamp',
-      date: 'December 5, 2023',
-      participants: '80+',
-      location: 'Lab Complex'
-    },
-    {
-      id: 5,
-      image: '/highlights/event (5).jpg',
-      title: 'Cloud Computing Seminar',
-      date: 'November 15, 2023',
-      participants: '120+',
-      location: 'Conference Room'
-    },
-    {
-      id: 6,
-      image: '/highlights/event (6).jpg',
-      title: 'Cybersecurity Workshop',
-      date: 'October 20, 2023',
-      participants: '90+',
-      location: 'IT Block'
-    },
-    {
-      id: 7,
-      image: '/highlights/event (7).jpg',
-      title: 'Data Science Summit',
-      date: 'September 10, 2023',
-      participants: '180+',
-      location: 'Main Auditorium'
-    },
-    {
-      id: 8,
-      image: '/highlights/event (8).jpg',
-      title: 'IoT Exhibition',
-      date: 'August 25, 2023',
-      participants: '150+',
-      location: 'Exhibition Hall'
-    },
-    {
-      id: 9,
-      image: '/highlights/event (9).jpg',
-      title: 'Blockchain Conference',
-      date: 'July 15, 2023',
-      participants: '100+',
-      location: 'Seminar Hall'
-    }
-  ]
-
-  const openLightbox = (index: number): void => {
-    setCurrentIndex(index)
-    setSelectedImage(highlights[index])
-  }
-
-  const closeLightbox = (): void => {
-    setSelectedImage(null)
-  }
-
-  const goToPrevious = (): void => {
-    const newIndex = currentIndex === 0 ? highlights.length - 1 : currentIndex - 1
-    setCurrentIndex(newIndex)
-    setSelectedImage(highlights[newIndex])
-  }
-
-  const goToNext = (): void => {
-    const newIndex = currentIndex === highlights.length - 1 ? 0 : currentIndex + 1
-    setCurrentIndex(newIndex)
-    setSelectedImage(highlights[newIndex])
-  }
+  const selected = currentIndex !== null ? highlights[currentIndex] : null
 
   return (
-    <section className="section-padding relative" ref={ref}>
+    <section className="py-20 sm:py-28 relative" ref={ref}>
       <div className="container-custom">
-        {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          transition={{ duration: 0.5 }}
+          className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10 sm:mb-14"
         >
-          <h2 className="heading-2 mb-4 text-gray-900 dark:text-white">
-            Event Highlights
-          </h2>
-          <p className="body-text max-w-3xl mx-auto">
-            Glimpses of our successful events, workshops, and activities that showcase 
-            the vibrant tech community at CSI NMAMIT.
+          <div>
+            <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-primary-500 mb-3">
+              Gallery
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+              Event highlights
+            </h2>
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 max-w-sm md:text-right text-sm leading-relaxed">
+            Moments from workshops, hackathons, and chapter events across campus.
           </p>
         </motion.div>
 
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 auto-rows-[220px]">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3 auto-rows-[160px] sm:auto-rows-[220px]">
           {highlights.map((item, index) => (
-            <motion.div
+            <motion.button
+              type="button"
               key={item.id}
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={inView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.05 }}
-              whileHover={{ y: -5 }}
-              className={`relative overflow-hidden rounded-xl cursor-pointer group
-                         ${index === 0 ? 'md:col-span-2 md:row-span-1' : ''}`}
-              onClick={() => openLightbox(index)}
+              transition={{ duration: 0.4, delay: index * 0.03 }}
+              className={`relative overflow-hidden rounded-2xl group text-left
+                ${index === 0 ? 'md:col-span-2' : ''}`}
+              onClick={() => open(index)}
             >
-              <div className="relative w-full h-full overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
-                {/* Overlay Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <h3 className="text-lg font-bold mb-2">{item.title}</h3>
-                  <div className="flex items-center gap-4 text-sm">
-                    <span className="flex items-center gap-1">
-                      <Calendar size={14} />
-                      {item.date}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users size={14} />
-                      {item.participants}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Expand Icon */}
-                <div className="absolute top-4 right-4 p-2 rounded-lg bg-white/20 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Maximize2 size={20} className="text-white" />
-                </div>
+              <Image
+                src={item.image}
+                alt={item.title}
+                fill
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 flex items-end justify-between gap-2">
+                <h3 className="text-white text-sm sm:text-base font-semibold">{item.title}</h3>
+                <Maximize2 size={16} className="text-white/80 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
 
-        {/* Lightbox */}
         <AnimatePresence>
-          {selectedImage && (
+          {selected && currentIndex !== null && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 flex items-center justify-center p-4 pt-24 md:pt-28 bg-black/90 backdrop-blur-sm"
-              onClick={closeLightbox}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 pt-24 bg-black/90 backdrop-blur-sm"
+              onClick={close}
             >
               <motion.div
-                initial={{ scale: 0.9 }}
+                initial={{ scale: 0.96 }}
                 animate={{ scale: 1 }}
-                exit={{ scale: 0.9 }}
+                exit={{ scale: 0.96 }}
                 className="relative max-w-5xl w-full"
-                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                onClick={e => e.stopPropagation()}
               >
-                {/* Close Button */}
                 <button
-                  onClick={closeLightbox}
-                  className="absolute top-4 right-4 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                  type="button"
+                  onClick={close}
+                  className="absolute -top-12 right-0 sm:top-4 sm:right-4 z-10 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+                  aria-label="Close"
                 >
-                  <X size={24} className="text-white" />
-                </button>
-
-                {/* Navigation Buttons */}
-                <button
-                  onClick={goToPrevious}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                >
-                  <ChevronLeft size={24} className="text-white" />
+                  <X size={22} />
                 </button>
                 <button
-                  onClick={goToNext}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                  type="button"
+                  onClick={prev}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+                  aria-label="Previous"
                 >
-                  <ChevronRight size={24} className="text-white" />
+                  <ChevronLeft size={22} />
                 </button>
-
-                {/* Image */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={selectedImage.image}
-                  alt={selectedImage.title}
-                  className="w-full h-auto max-h-[80vh] object-contain rounded-xl"
-                />
-
-                {/* Image Info */}
-                <div className="mt-4 p-4 rounded-xl bg-white/10 backdrop-blur-sm text-white">
-                  <h3 className="text-2xl font-bold mb-2">{selectedImage.title}</h3>
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <span className="flex items-center gap-2">
-                      <Calendar size={16} />
-                      {selectedImage.date}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Users size={16} />
-                      {selectedImage.participants} Participants
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <MapPin size={16} />
-                      {selectedImage.location}
-                    </span>
-                  </div>
+                <button
+                  type="button"
+                  onClick={next}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+                  aria-label="Next"
+                >
+                  <ChevronRight size={22} />
+                </button>
+                <div className="relative w-full aspect-[16/10] max-h-[75vh] rounded-xl overflow-hidden bg-black">
+                  <Image
+                    src={selected.image}
+                    alt={selected.title}
+                    fill
+                    sizes="90vw"
+                    className="object-contain"
+                  />
                 </div>
+                <p className="mt-3 text-center text-white font-medium">{selected.title}</p>
+                <p className="text-center text-white/50 text-xs mt-1">
+                  {currentIndex + 1} / {highlights.length}
+                </p>
               </motion.div>
             </motion.div>
           )}

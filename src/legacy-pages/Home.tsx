@@ -7,7 +7,7 @@ import CTA from '../components/Home/CTA'
 
 const Home = () => {
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-x-hidden">
       <Hero />
       <Features />
       <About />

@@ -1,34 +1,37 @@
+'use client'
+
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
+import { Code2, Mic2, Rocket, Trophy } from 'lucide-react'
 
 const activities = [
   {
-    numeral: '01',
-    title: 'Technical Workshops',
-    description: 'Hands-on learning with industry experts covering cutting-edge technologies from AI to cloud computing.',
+    icon: Code2,
+    title: 'Technical workshops',
+    description: 'Hands-on sessions on web, cloud, AI, security, and tooling — led by peers and industry guests.',
     count: '30+',
-    countLabel: 'Workshops',
+    label: 'workshops',
   },
   {
-    numeral: '02',
-    title: 'Hackathons & Competitions',
-    description: 'Intense coding challenges and innovation sprints that push your problem-solving limits.',
+    icon: Trophy,
+    title: 'Hackathons',
+    description: 'Timed builds, teamwork, and demos. Practice shipping under pressure with people who care.',
     count: '10+',
-    countLabel: 'Hackathons',
+    label: 'hackathons',
   },
   {
-    numeral: '03',
-    title: 'Guest Lectures & Talks',
-    description: 'Insights from tech leaders, alumni, and industry pioneers sharing real-world experience.',
+    icon: Mic2,
+    title: 'Talks & panels',
+    description: 'Alumni and industry voices on careers, product, research, and what “good engineering” looks like.',
     count: '20+',
-    countLabel: 'Lectures',
+    label: 'sessions',
   },
   {
-    numeral: '04',
-    title: 'Project Exhibitions',
-    description: 'A platform to showcase your innovations, get feedback, and connect with fellow builders.',
+    icon: Rocket,
+    title: 'Showcases',
+    description: 'Present projects, get feedback, and find collaborators for the next build cycle.',
     count: '15+',
-    countLabel: 'Projects',
+    label: 'showcases',
   },
 ]
 
@@ -36,53 +39,48 @@ const Features: React.FC = () => {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 })
 
   return (
-    <section className="py-28 relative bg-zinc-50 dark:bg-zinc-900/30" ref={ref}>
+    <section className="py-20 sm:py-28 bg-zinc-50 dark:bg-zinc-900/40 border-y border-gray-100 dark:border-gray-900" ref={ref}>
       <div className="container-custom">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-20"
+          transition={{ duration: 0.5 }}
+          className="max-w-2xl mb-12 sm:mb-16"
         >
-          <h2 className="heading-2 mb-4 text-gray-900 dark:text-white">
-            What We Offer
+          <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-primary-500 mb-3">
+            What we run
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-3">
+            A year of building, not just attending
           </h2>
-          <p className="body-text max-w-3xl mx-auto">
-            A structured ecosystem of activities designed to build technical depth, professional skills, and lasting connections.
+          <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
+            Structured activities so members leave with skills, portfolio pieces, and people they can call for the next project.
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-x-16 gap-y-0">
+        <div className="grid sm:grid-cols-2 gap-4 lg:gap-5">
           {activities.map((item, index) => (
-            <motion.div
-              key={item.numeral}
-              initial={{ opacity: 0, y: 30 }}
+            <motion.article
+              key={item.title}
+              initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.1 * index }}
-              className="flex gap-6 group pl-4 border-l-2 border-transparent 
-                         hover:border-primary-400 transition-colors duration-300 py-10"
+              transition={{ duration: 0.45, delay: 0.06 * index }}
+              className="group rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-6 sm:p-7 hover:border-primary-400/40 dark:hover:border-primary-500/30 transition-colors"
             >
-              <div className="shrink-0 pt-1">
-                <span className="text-4xl font-bold font-display text-gray-200 dark:text-gray-800 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors duration-300">
-                  {item.numeral}
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 group-hover:bg-primary-500/10 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                  <item.icon size={20} />
                 </span>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-4">
-                  {item.description}
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold font-display text-primary-500">{item.count}</span>
-                  <span className="text-xs text-gray-400 dark:text-gray-500">{item.countLabel}</span>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{item.count}</p>
+                  <p className="text-[11px] uppercase tracking-wider text-gray-400">{item.label}</p>
                 </div>
               </div>
-            </motion.div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{item.description}</p>
+            </motion.article>
           ))}
         </div>
-
       </div>
     </section>
   )
