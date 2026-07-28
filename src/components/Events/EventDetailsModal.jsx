@@ -8,11 +8,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext'
 import { formatEventDate } from '../../utils/eventUtils'
 import { toast } from 'sonner'
-import {
-  doc, collection, addDoc, query, where, getDocs,
-  updateDoc, serverTimestamp, getDoc, arrayUnion
-} from 'firebase/firestore'
-import { db } from '../../config/firebase'
+import { api } from '../../lib/api-client'
 
 const EventDetailsModal = ({ event, isOpen, onClose }) => {
   const { user, signInWithGoogle, isProfileIncomplete, checkProfileCompletion } = useAuth()
@@ -42,11 +38,9 @@ const EventDetailsModal = ({ event, isOpen, onClose }) => {
   const checkUserTeam = async () => {
     if (!user || event.type !== 'TEAM') return
     try {
-      const registrationsRef = collection(db, 'eventRegistrations')
-      const q = query(registrationsRef, where('eventId', '==', event.id), where('userId', '==', user.uid))
-      const snapshot = await getDocs(q)
-      if (!snapshot.empty) {
-        const registration = snapshot.docs[0].data()
+      const { registrations } = await api.get(`/api/events/${event.id}/registrations?mine=true`)
+      if (registrations?.length) {
+        const registration = registrations[0]
         setUserTeam({ teamName: registration.teamName, teamCode: registration.teamCode, teamSize: registration.teamSize, members: registration.members || [] })
       }
     } catch (e) { console.error(e) }
@@ -56,10 +50,8 @@ const EventDetailsModal = ({ event, isOpen, onClose }) => {
     if (!event) return
     setOtherTeamsLoading(true)
     try {
-      const registrationsRef = collection(db, 'eventRegistrations')
-      const qTeams = query(registrationsRef, where('eventId', '==', event.id), where('registrationType', '==', 'team'))
-      const snapshot = await getDocs(qTeams)
-      setOtherTeams(snapshot.docs.map(d => d.data()))
+      const { registrations } = await api.get(`/api/events/${event.id}/registrations?teams=true`)
+      setOtherTeams(registrations || [])
     } catch (e) { setOtherTeams([]) }
     finally { setOtherTeamsLoading(false) }
   }
@@ -72,12 +64,10 @@ const EventDetailsModal = ({ event, isOpen, onClose }) => {
   }
 
   const generateUniqueTeamCode = async () => {
-    const registrationsRef = collection(db, 'eventRegistrations')
     for (let attempt = 0; attempt < 5; attempt++) {
       const code = generateTeamCode()
-      const qCode = query(registrationsRef, where('eventId', '==', event.id), where('teamCode', '==', code))
-      const snap = await getDocs(qCode)
-      if (snap.empty) return code
+      const { available } = await api.get(`/api/events/${event.id}/registrations/check-code?code=${code}`)
+      if (available) return code
     }
     return generateTeamCode()
   }
@@ -104,16 +94,7 @@ const EventDetailsModal = ({ event, isOpen, onClose }) => {
     if (!event.registrationsAvailable) { toast.error('Registrations are closed for this event'); return }
     setLoading(true)
     try {
-      await addDoc(collection(db, 'eventRegistrations'), {
-        eventId: event.id, eventTitle: event.title, userId: user.uid, userName: user.name,
-        userEmail: user.email, registrationType: 'individual', status: 'pending', registeredAt: serverTimestamp()
-      })
-      const eventRef = doc(db, 'events', event.id)
-      await updateDoc(eventRef, {
-        participantCount: (event.participantCount || 0) + 1,
-        participants: arrayUnion({ userId: user.uid, name: user.name, email: user.email, registeredAt: new Date() }),
-        updatedAt: serverTimestamp()
-      })
+      await api.post(`/api/events/${event.id}/registrations`, { type: 'individual' })
       toast.success('Successfully registered for the event!')
       onClose()
     } catch (error) {
@@ -130,13 +111,7 @@ const EventDetailsModal = ({ event, isOpen, onClose }) => {
     setLoading(true)
     try {
       const code = await generateUniqueTeamCode()
-      await addDoc(collection(db, 'eventRegistrations'), {
-        eventId: event.id, eventTitle: event.title, userId: user.uid, userName: user.name,
-        userEmail: user.email, registrationType: 'team', teamName: teamName.trim(), teamCode: code,
-        teamSize, teamLeader: user.uid,
-        members: [{ userId: user.uid, name: user.name, email: user.email, role: 'leader', joinedAt: new Date() }],
-        status: 'pending', registeredAt: serverTimestamp()
-      })
+      await api.post(`/api/events/${event.id}/registrations`, { type: 'team', teamName: teamName.trim(), teamCode: code, teamSize })
       toast.success(`Team created! Your team code is: ${code}`)
       setUserTeam({ teamName: teamName.trim(), teamCode: code, members: [] })
       setShowTeamForm(false)
@@ -157,17 +132,12 @@ const EventDetailsModal = ({ event, isOpen, onClose }) => {
     if (!event.registrationsAvailable) { toast.error('Registrations are closed for this event'); return }
     setLoading(true)
     try {
-      const registrationsRef = collection(db, 'eventRegistrations')
-      const q = query(registrationsRef, where('eventId', '==', event.id), where('teamCode', '==', teamCode.trim().toUpperCase()))
-      const snapshot = await getDocs(q)
-      if (snapshot.empty) { toast.error('Team code not found'); setLoading(false); return }
-      const teamDoc = snapshot.docs[0]; const teamData = teamDoc.data()
+      const { registration: teamData } = await api.get(`/api/events/${event.id}/registrations/team?code=${teamCode.trim().toUpperCase()}`)
+      if (!teamData) { toast.error('Team code not found'); setLoading(false); return }
       const alreadyMember = teamData.members?.some(m => m.userId === user.uid)
       if (alreadyMember) { toast.error('You are already a member of this team'); setLoading(false); return }
       if (teamData.members && teamData.members.length >= teamData.teamSize) { toast.error('This team is full'); setLoading(false); return }
-      await updateDoc(doc(db, 'eventRegistrations', teamDoc.id), {
-        members: arrayUnion({ userId: user.uid, name: user.name, email: user.email, role: 'member', joinedAt: new Date() })
-      })
+      await api.post(`/api/events/${event.id}/registrations`, { type: 'join', teamCode: teamCode.trim().toUpperCase() })
       toast.success('Successfully joined the team!')
       setUserTeam({ teamName: teamData.teamName, teamCode: teamData.teamCode, teamSize: teamData.teamSize, members: [...(teamData.members || []), { userId: user.uid, name: user.name, email: user.email, role: 'member', joinedAt: new Date() }] })
       setShowJoinTeamForm(false)

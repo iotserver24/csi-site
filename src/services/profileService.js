@@ -1,195 +1,22 @@
-import { doc, updateDoc, getDoc, setDoc, serverTimestamp, arrayUnion } from 'firebase/firestore'
-import { db } from '../config/firebase'
-import { uploadToCloudinary } from '../config/cloudinary'
-import { sanitizeFormData } from '../utils/securityUtils'
+import { api } from '../lib/api-client'
 
-/**
- * Upload profile image to Cloudinary and update user document
- * @param {string} userId - User ID
- * @param {File} imageFile - Image file to upload
- * @returns {Promise<string>} - Cloudinary image URL
- */
-export const uploadProfileImage = async (userId, imageFile) => {
-  if (!userId || !imageFile) {
-    throw new Error('User ID and image file are required')
-  }
-
-  const uploadResult = await uploadToCloudinary(imageFile, 'csi-profiles')
-  if (!uploadResult.secure_url) {
-    throw new Error('Failed to get image URL from Cloudinary')
-  }
-
-  const userRef = doc(db, 'users', userId)
-  await updateDoc(userRef, {
-    photoURL: uploadResult.secure_url,
-    'profile.imageHistory': arrayUnion({
-      url: uploadResult.secure_url,
-      publicId: uploadResult.public_id,
-      uploadedAt: new Date().toISOString(),
-      format: uploadResult.format,
-      size: uploadResult.bytes
+export async function updateProfileWithImage(userId, profileData, imageFile) {
+  if (imageFile) {
+    const media = await api.post('/api/media/upload-url', {
+      fileName: imageFile.name,
+      contentType: imageFile.type,
+      size: imageFile.size,
     })
-  })
-
-  return uploadResult.secure_url
+    await fetch(media.uploadUrl, { method: 'PUT', headers: { 'Content-Type': imageFile.type }, body: imageFile })
+    profileData = { ...profileData, photoURL: media.publicUrl }
+  }
+  return api.patch('/api/profile', profileData)
 }
 
-/**
- * Update user profile in Firestore
- * @param {string} userId - User ID
- * @param {Object} profileData - Profile data to update
- * @returns {Promise<boolean>} - Success status
- */
-export const updateUserProfile = async (userId, profileData) => {
-  if (!userId) throw new Error('User ID is required')
-
-  const safeProfileData = sanitizeFormData(profileData)
-  const userRef = doc(db, 'users', userId)
-  const userDoc = await getDoc(userRef)
-
-  if (!userDoc.exists()) {
-    await setDoc(userRef, {
-      uid: userId,
-      ...safeProfileData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    })
-  } else {
-    await updateDoc(userRef, {
-      ...safeProfileData,
-      updatedAt: serverTimestamp()
-    })
-  }
-
-  return true
-}
-
-/**
- * Get user profile from Firestore
- * @param {string} userId - User ID
- * @returns {Promise<Object>} - User profile data
- */
-export const getUserProfile = async (userId) => {
-  if (!userId) {
-    throw new Error('User ID is required')
-  }
-
-  try {
-    const userRef = doc(db, 'users', userId)
-    const userDoc = await getDoc(userRef)
-
-    if (userDoc.exists()) {
-      return userDoc.data()
-    }
-
-    return null
-  } catch (error) {
-    throw error
-  }
-}
-
-/**
- * Update profile with image upload
- * @param {string} userId - User ID
- * @param {Object} profileData - Profile data
- * @param {File} imageFile - Optional image file
- * @returns {Promise<Object>} - Updated profile data with image URL
- */
-export const updateProfileWithImage = async (userId, profileData, imageFile = null) => {
-  try {
-    let photoURL = profileData.photoURL
-
-    // Upload image if provided
-    if (imageFile) {
-      photoURL = await uploadProfileImage(userId, imageFile)
-    }
-
-    // Prepare update data
-    // Sanitize base profile fields
-    const safeBase = sanitizeFormData({
-      name: profileData.name,
-      photoURL: photoURL,
-    })
-
-    const updateData = {
-      ...safeBase,
-      profile: {
-        ...sanitizeFormData({
-          usn: profileData.usn || '',
-          phone: profileData.phone || '',
-          role: profileData.role || '',
-          bio: profileData.bio || '',
-          branch: profileData.branch || '',
-          year: profileData.year || '',
-          skills: profileData.skills || [],
-          linkedin: profileData.linkedin || '',
-          github: profileData.github || '',
-        }),
-        updatedAt: serverTimestamp()
-      }
-    }
-
-    // Also update roleDetails if role is provided
-    if (profileData.role) {
-      updateData.roleDetails = {
-        position: sanitizeFormData({ position: profileData.role }).position,
-        updatedAt: serverTimestamp()
-      }
-    }
-
-    // Update profile in Firestore
-    await updateUserProfile(userId, updateData)
-
-    return {
-      ...updateData,
-      photoURL
-    }
-  } catch (error) {
-    console.error('Error updating profile with image:', error)
-    throw error
-  }
-}
-
-/**
- * Validate profile data
- * @param {Object} profileData - Profile data to validate
- * @returns {Object} - Validation result
- */
-export const validateProfileData = (profileData) => {
+export function validateProfileData(data) {
   const errors = {}
-
-  // Required fields
-  if (!profileData.name || String(profileData.name).trim() === '') {
-    errors.name = 'Name is required'
-  }
-
-  // Phone validation
-  if (profileData.phone) {
-    const phoneRegex = /^[0-9]{10}$/
-    if (!phoneRegex.test(profileData.phone.replace(/\D/g, ''))) {
-      errors.phone = 'Please enter a valid 10-digit phone number'
-    }
-  }
-
-  // Year validation
-  if (profileData.year) {
-    const validYears = ['2nd year', '3rd year', '4th year', 'Alumni']
-    if (!validYears.includes(profileData.year)) {
-      errors.year = 'Please select a valid year'
-    }
-  }
-
-  // URL validations
-  if (profileData.linkedin && !profileData.linkedin.includes('linkedin.com')) {
-    errors.linkedin = 'Please enter a valid LinkedIn URL'
-  }
-
-  if (profileData.github && !profileData.github.includes('github.com')) {
-    errors.github = 'Please enter a valid GitHub URL'
-  }
-
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors
-  }
+  if (!data.name?.trim()) errors.name = 'Name is required'
+  if (data.phone && !/^\+?[0-9\s-]{8,15}$/.test(data.phone)) errors.phone = 'Enter a valid phone number'
+  if (data.linkedin && !/^https?:\/\//.test(data.linkedin)) errors.linkedin = 'Please enter a valid LinkedIn URL'
+  return { isValid: Object.keys(errors).length === 0, errors }
 }

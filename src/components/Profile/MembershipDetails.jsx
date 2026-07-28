@@ -1,9 +1,9 @@
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 
 const MembershipDetails = ({ user, isEditing, onSave }) => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const membershipStatus = user?.membership?.status || 'inactive'
   const membershipType = user?.membership?.type || 'None'
   const membershipExpiry = user?.membership?.expiresAt?.toDate()
@@ -15,12 +15,12 @@ const MembershipDetails = ({ user, isEditing, onSave }) => {
       const success = await onSave()
       if (success) {
         toast.success('Profile saved! Redirecting...', { id: 'save-redirect' })
-        navigate('/recruit')
+        router.push('/recruit')
       } else {
         toast.error('Failed to save profile. Please try again.', { id: 'save-redirect' })
       }
     } else {
-      navigate('/recruit')
+      router.push('/recruit')
     }
   }
   return (

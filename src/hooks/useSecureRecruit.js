@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { toast } from 'sonner'
 import paymentService from '../services/paymentService'
@@ -14,7 +14,7 @@ const POLL_INTERVAL = 1500
 const MAX_POLL_ATTEMPTS = 12
 
 export const useSecureRecruit = () => {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { user, signInWithGoogle, getUserData } = useAuth()
   const [selectedPlan, setSelectedPlan] = useState('one-year')
   const [loading, setLoading] = useState(false)
@@ -137,7 +137,7 @@ export const useSecureRecruit = () => {
       if (missingFields.length > 0 || !userData.name) {
         const missing = missingFields.join(', ')
         toast.error(`Please complete your profile. Missing: ${missing}`)
-        navigate('/profile?returnTo=/recruit')
+        router.push('/profile?returnTo=/recruit')
         return
       }
 
@@ -182,7 +182,7 @@ export const useSecureRecruit = () => {
 
           paymentAttempts.current = 0
           setLoading(false)
-          navigate('/profile')
+          router.push('/profile')
         },
         (error) => {
           toast.error(error || 'Payment failed. Please try again.')

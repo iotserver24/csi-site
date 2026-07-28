@@ -1,12 +1,14 @@
+ 'use client'
+
 import { useState, useEffect, useCallback } from 'react'
 import { Command } from 'cmdk'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Calendar, Users, Home, UserPlus, X } from 'lucide-react'
 
 const CommandPalette = () => {
   const [open, setOpen] = useState(false)
-  const navigate = useNavigate()
+  const router = useRouter()
 
   // Toggle the menu when ⌘K / Ctrl+K is pressed
   useEffect(() => {
@@ -96,7 +98,7 @@ const CommandPalette = () => {
                     <Command.Item
                       key={path}
                       value={`${name} ${keywords}`}
-                      onSelect={() => runCommand(() => navigate(path))}
+                      onSelect={() => runCommand(() => router.push(path))}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer
                                  text-gray-700 dark:text-gray-300
                                  aria-selected:bg-gray-100 dark:aria-selected:bg-gray-800

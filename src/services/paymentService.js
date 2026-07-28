@@ -1,272 +1,50 @@
-/**
- * Secure Payment Service
- * Handles all payment-related operations with security measures
- */
-
-import {
-  validatePaymentAmount,
-  generateTransactionId,
-  sanitizeFormData
-} from '../utils/securityUtils'
+import { api } from '../lib/api-client'
 import { membershipPlans } from '../data/membershipData'
-import { auth } from '../config/firebase'
-
-const getFirebaseAuthToken = async () => {
-  if (!auth?.currentUser) throw new Error('Not authenticated')
-  return await auth.currentUser.getIdToken()
-}
+import { isValidEmail, isValidPhone, isValidUSN, sanitizeFormData } from '../utils/securityUtils'
 
 class PaymentService {
-  constructor() {
-    this.razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID
-    this.apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
-    this.isTestMode = import.meta.env.VITE_APP_ENV !== 'production'
-    this.rateLimitMap = new Map()
+  constructor() { this.razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '' }
+
+  validatePaymentData(data, planId) {
+    if (!membershipPlans.find(plan => plan.id === planId)) throw new Error('Invalid membership plan selected')
+    if (!isValidEmail(data.email) || !isValidPhone(data.phone) || !isValidUSN(data.usn)) throw new Error('Please check your membership details')
   }
 
-  /**
-   * Rate limiting for payment attempts
-   */
-  checkRateLimit(userId) {
-    const now = Date.now()
-    const userAttempts = this.rateLimitMap.get(userId) || []
-    const recentAttempts = userAttempts.filter(
-      timestamp => now - timestamp < 300000 // 5 minutes window
-    )
-
-    if (recentAttempts.length >= 3) {
-      throw new Error('Too many payment attempts. Please try again later.')
-    }
-
-    recentAttempts.push(now)
-    this.rateLimitMap.set(userId, recentAttempts)
-    return true
-  }
-
-  /**
-   * Validate payment data before processing
-   */
-  validatePaymentData(formData, selectedPlan) {
-    const errors = []
-
-    // Validate plan exists
-    const plan = membershipPlans.find(p => p.id === selectedPlan)
-    if (!plan) {
-      errors.push('Invalid membership plan selected')
-    }
-
-    // Validate required fields
-    const requiredFields = ['name', 'email', 'phone', 'branch', 'year', 'usn']
-    for (const field of requiredFields) {
-      const value = formData[field]
-      if (!value || String(value).trim() === '') {
-        errors.push(`${field} is required`)
-      }
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (formData.email && !emailRegex.test(formData.email)) {
-      errors.push('Invalid email format')
-    }
-
-    // Validate phone number (Indian format)
-    const phoneRegex = /^[6-9]\d{9}$/
-    if (formData.phone && !phoneRegex.test(formData.phone)) {
-      errors.push('Invalid phone number')
-    }
-
-    // Validate USN format
-    const usnRegex = /^(NNM|NU)/i
-    if (formData.usn && !usnRegex.test(formData.usn)) {
-      errors.push('Invalid USN format (must start with NNM or NU)')
-    }
-
-    if (errors.length > 0) {
-      throw new Error(errors.join(', '))
-    }
-
-    return true
-  }
-
-  /**
-   * Create payment order (should be done on backend in production)
-   */
   async createOrder(userId, planId, formData) {
-    try {
-      // Check rate limiting
-      this.checkRateLimit(userId)
-
-      // Get plan details
-      const plan = membershipPlans.find(p => p.id === planId)
-      if (!plan) {
-        throw new Error('Invalid plan selected')
-      }
-
-      // Validate form data
-      this.validatePaymentData(formData, planId)
-
-      // Sanitize form data
-      const sanitizedData = sanitizeFormData(formData)
-
-      // Generate secure transaction ID
-      const transactionId = generateTransactionId()
-
-      if (!this.apiBaseUrl) {
-        throw new Error('Payment backend not configured. Please set VITE_API_BASE_URL.')
-      }
-
-      const idToken = await getFirebaseAuthToken()
-      const response = await fetch(`${this.apiBaseUrl}/create-order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`,
-          'X-Request-ID': transactionId
-        },
-        body: JSON.stringify({
-          userId,
-          planId,
-          transactionId
-        })
-      })
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.error || 'Failed to create payment order')
-      }
-
-      return await response.json()
-    } catch (error) {
-      // console.error('Order creation error:', error)
-      throw error
-    }
+    this.validatePaymentData(formData, planId)
+    return api.post('/api/payments/order', { userId, planId, formData: sanitizeFormData(formData) })
   }
 
-  /**
-   * Initialize Razorpay payment
-   */
   async initializePayment(userId, planId, formData, onSuccess, onFailure) {
     try {
-      // Validate Razorpay key exists
-      if (!this.razorpayKeyId) {
-        throw new Error('Payment gateway not configured')
-      }
-
-      // Create order
+      if (!this.razorpayKeyId) throw new Error('Payment gateway not configured')
       const order = await this.createOrder(userId, planId, formData)
-      const plan = membershipPlans.find(p => p.id === planId)
-
-      // Razorpay options
-      const options = {
-        key: this.razorpayKeyId,
-        amount: order.amount,
-        currency: order.currency,
-        name: 'CSI NMAMIT',
-        description: `${plan.name} - ${plan.duration}`,
-        image: '/csi-logo.png',
-        order_id: order.orderId,
-        handler: async (response) => {
-          // Verify payment on backend
-          await this.verifyPayment(response, order.transactionId, onSuccess)
+      const plan = membershipPlans.find(item => item.id === planId)
+      const razorpay = new window.Razorpay({
+        key: this.razorpayKeyId, amount: order.amount, currency: order.currency, name: 'CSI NMAMIT',
+        description: `${plan.name} - ${plan.duration}`, image: '/csi-logo.png', order_id: order.orderId,
+        prefill: { name: formData.name, email: formData.email, contact: formData.phone },
+        handler: async response => {
+          const result = await api.post('/api/payments/verify', response)
+          if (!result.verified) throw new Error('Payment verification failed')
+          onSuccess(result)
         },
-        prefill: {
-          name: formData.name,
-          email: formData.email,
-          contact: formData.phone
-        },
-        notes: {
-          userId,
-          planId,
-          transactionId: order.transactionId
-        },
-        theme: {
-          color: '#3b82f6'
-        },
-        modal: {
-          ondismiss: () => {
-            onFailure('Payment cancelled by user')
-          }
-        }
-      }
-
-      // Initialize Razorpay
-      const razorpay = new window.Razorpay(options)
-      razorpay.open()
-    } catch (error) {
-      // console.error('Payment initialization error:', error)
-      onFailure(error.message)
-    }
-  }
-
-  /**
-   * Verify payment (MUST be done on backend in production)
-   */
-  async verifyPayment(paymentResponse, transactionId, onSuccess) {
-    try {
-      if (!this.apiBaseUrl) {
-        throw new Error('Payment backend not configured')
-      }
-
-      const idToken = await getFirebaseAuthToken()
-      const response = await fetch(`${this.apiBaseUrl}/verify-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`,
-          'X-Transaction-ID': transactionId
-        },
-        body: JSON.stringify({
-          razorpay_payment_id: paymentResponse.razorpay_payment_id,
-          razorpay_order_id: paymentResponse.razorpay_order_id,
-          razorpay_signature: paymentResponse.razorpay_signature,
-          transactionId
-        })
+        modal: { ondismiss: () => onFailure('Payment cancelled by user') },
+        theme: { color: '#3b82f6' },
       })
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.error || 'Payment verification failed')
-      }
-
-      const result = await response.json()
-      if (result.verified) {
-        onSuccess(result)
-      } else {
-        throw new Error('Payment verification failed')
-      }
-    } catch (error) {
-      // console.error('Payment verification error:', error)
-      throw error
-    }
+      razorpay.open()
+    } catch (error) { onFailure(error.message) }
   }
 
-  /**
-   * Load Razorpay script securely
-   */
   loadRazorpayScript() {
-    return new Promise((resolve) => {
-      // Check if already loaded
-      if (window.Razorpay) {
-        resolve(true)
-        return
-      }
-
+    return new Promise(resolve => {
+      if (window.Razorpay) return resolve(true)
       const script = document.createElement('script')
       script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-      script.async = true
-      script.defer = true
-
-      // Add integrity check if available
-      script.crossOrigin = 'anonymous'
-
-      script.onload = () => resolve(true)
-      script.onerror = () => resolve(false)
-
+      script.onload = () => resolve(true); script.onerror = () => resolve(false)
       document.body.appendChild(script)
     })
   }
 }
 
-// Export singleton instance
 export default new PaymentService()

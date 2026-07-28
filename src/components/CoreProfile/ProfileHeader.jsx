@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Shield } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 
 const ProfileHeader = () => {
   return (
@@ -14,7 +14,7 @@ const ProfileHeader = () => {
           Core Member Profile
         </h1>
         <Link
-          to="/"
+          href="/"
           className="btn-secondary flex items-center space-x-2"
         >
           <Shield size={18} />

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 
 export const getRoleCategory = (getUserRoleDisplay) => {
-  const role = getUserRoleDisplay()
+  const role = getUserRoleDisplay() || ''
   for (const [category, roles] of Object.entries(ROLE_CATEGORIES)) {
     if (roles.includes(role)) {
       return category
@@ -35,7 +35,7 @@ export const getRoleColor = (getRoleCategory, getUserRoleDisplay) => {
 }
 
 export const getStats = (getUserRoleDisplay) => {
-  const role = getUserRoleDisplay()
+  const role = getUserRoleDisplay() || ''
   if (role === 'President' || role === 'Vice President') {
     return [
       { label: 'Events Organized', value: '25', icon: Calendar },

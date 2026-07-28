@@ -1,9 +1,12 @@
+'use client'
+
 // Navbar-modernized.jsx — 2026-level redesign
 // Drop-in replacement for src/components/Layout/Navbar.jsx
 // Keeps all existing logic, upgrades visual layer only.
 
 import { useState, useEffect, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Menu, X, Home, Calendar, Users, User,
@@ -17,7 +20,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [profileDropdown, setProfileDropdown] = useState(false)
-  const location = useLocation()
+  const pathname = usePathname()
   const { user, signInWithGoogle, logout, authLoading, getUserRoleDisplay, isUserCoreMember } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const dropdownRef = useRef(null)
@@ -34,7 +37,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  useEffect(() => { setIsOpen(false); setProfileDropdown(false) }, [location.pathname])
+  useEffect(() => { setIsOpen(false); setProfileDropdown(false) }, [pathname])
 
   useEffect(() => {
     const handle = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setProfileDropdown(false) }
@@ -52,7 +55,7 @@ const Navbar = () => {
     { path: '/events', label: 'Events', icon: Calendar },
     { path: '/team', label: 'Team', icon: Users },
   ]
-  const isActive = (p) => location.pathname === p
+  const isActive = (p) => pathname === p
 
   return (
     <>
@@ -68,7 +71,7 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-16 lg:h-[68px]">
 
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group shrink-0">
+            <Link href="/" className="flex items-center gap-3 group shrink-0">
               <div className="relative">
                 <img src="/csi-logo.png" alt="CSI" className="h-9 w-9 lg:h-10 lg:w-10 transition-all duration-300" />
               </div>
@@ -83,7 +86,7 @@ const Navbar = () => {
               {navLinks.map(({ path, label }) => (
                 <Link
                   key={path}
-                  to={path}
+                  href={path}
                   className={`relative px-4 py-2 text-[13px] font-medium rounded-lg transition-all duration-200
                     ${isActive(path)
                       ? 'text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800'
@@ -103,7 +106,7 @@ const Navbar = () => {
 
               {/* Join CTA */}
               <Link
-                to="/recruit"
+                href="/recruit"
                 className="ml-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold
                            bg-gray-900 dark:bg-white text-white dark:text-gray-900
                            hover:bg-gray-700 dark:hover:bg-gray-100
@@ -184,7 +187,7 @@ const Navbar = () => {
                         {/* Links */}
                         <div className="py-1">
                           <Link
-                            to={isUserCoreMember() ? '/core-profile' : '/profile'}
+                            href={isUserCoreMember() ? '/core-profile' : '/profile'}
                             onClick={() => setProfileDropdown(false)}
                             className="flex items-center gap-3 px-4 py-2.5 text-[13px]
                                        text-gray-700 dark:text-gray-300
@@ -285,7 +288,7 @@ const Navbar = () => {
               {/* Nav links */}
               <div className="space-y-0.5">
                 {navLinks.map(({ path, label, icon: Icon }) => (
-                  <Link key={path} to={path} onClick={() => setIsOpen(false)}
+                  <Link key={path} href={path} onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-colors
                       ${isActive(path)
                         ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
@@ -299,7 +302,7 @@ const Navbar = () => {
               </div>
 
               {/* Join */}
-              <Link to="/recruit" onClick={() => setIsOpen(false)}
+              <Link href="/recruit" onClick={() => setIsOpen(false)}
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-[14px] font-semibold
                            bg-gray-900 dark:bg-white text-white dark:text-gray-900
                            hover:bg-gray-700 dark:hover:bg-gray-100 transition-colors">
@@ -309,7 +312,7 @@ const Navbar = () => {
               {/* User profile / signout */}
               {user ? (
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-0.5">
-                  <Link to={isUserCoreMember() ? '/core-profile' : '/profile'} onClick={() => setIsOpen(false)}
+                  <Link href={isUserCoreMember() ? '/core-profile' : '/profile'} onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
                     <User size={17} /> My Profile
                   </Link>

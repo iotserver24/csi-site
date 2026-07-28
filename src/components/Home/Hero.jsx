@@ -1,6 +1,8 @@
+ 'use client'
+
 import { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -150,7 +152,7 @@ const Hero = () => {
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
           {user ? (
-            <Link to="/events" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold hover:bg-gray-700 dark:hover:bg-gray-100 transition-all duration-200 translate-y-0 hover:-translate-y-[1px]">
+            <Link href="/events" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold hover:bg-gray-700 dark:hover:bg-gray-100 transition-all duration-200 translate-y-0 hover:-translate-y-[1px]">
               <span>Explore Events</span>
               <ArrowRight size={18} />
             </Link>
@@ -164,7 +166,7 @@ const Hero = () => {
                 <span>{authLoading ? 'Signing in...' : 'Get Started'}</span>
                 <ArrowRight size={18} />
               </button>
-              <Link to="/events" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-200 translate-y-0 hover:-translate-y-[1px]">
+              <Link href="/events" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:border-gray-400 dark:hover:text-gray-300 hover:border-gray-500 transition-all duration-200 translate-y-0 hover:-translate-y-[1px]">
                 Browse Events
               </Link>
             </>

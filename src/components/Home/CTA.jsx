@@ -1,6 +1,8 @@
+ 'use client'
+
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
 const CTA = () => {
@@ -41,14 +43,14 @@ const CTA = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/recruit"
+              href="/recruit"
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg bg-white text-gray-900 font-semibold hover:bg-gray-100 transition-all duration-200 translate-y-0 hover:-translate-y-[1px]"
             >
               <span>Join CSI Now</span>
               <ArrowRight size={18} />
             </Link>
             <Link
-              to="/events"
+              href="/events"
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg border border-gray-600 text-gray-300 font-semibold hover:border-gray-400 hover:text-white transition-all duration-200 translate-y-0 hover:-translate-y-[1px]"
             >
               Explore Events
