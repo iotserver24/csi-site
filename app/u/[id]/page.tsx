@@ -64,13 +64,13 @@ export default function SharedProfilePage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-950 grid place-items-center">
+    <div className="min-h-screen bg-white dark:bg-gray-950 grid place-items-center">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400" />
     </div>
   )
 
   if (error || !profile) return (
-    <div className="min-h-screen bg-gray-950 grid place-items-center text-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950 grid place-items-center text-gray-900 dark:text-white">
       <div className="text-center">
         <p className="text-xl mb-4">Profile not found</p>
         <Link href="/" className="text-yellow-400 hover:underline">Go home</Link>
@@ -82,14 +82,14 @@ export default function SharedProfilePage() {
   const certificates = (user.certificates || []) as Array<{ title: string; date: string; issuer?: string }>
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-gray-800">
+      <div className="border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-400 hover:text-white text-sm">
+          <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm">
             <ArrowLeft size={16} /> Back
           </button>
-          <button onClick={copyLink} className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+          <button onClick={copyLink} className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
             {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
             {copied ? 'Copied!' : 'Share'}
           </button>
@@ -101,7 +101,7 @@ export default function SharedProfilePage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-10">
           <div className="relative">
             <Image src={user.photoURL || '/default-avatar.svg'} alt={user.name} width={120} height={120} unoptimized
-              className="w-28 h-28 rounded-full object-cover ring-4 ring-gray-800" />
+              className="w-28 h-28 rounded-full object-cover ring-4 ring-gray-200 dark:ring-gray-800" />
             {user.membershipStatus === 'active' && (
               <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-yellow-400 rounded-full flex items-center justify-center">
                 <Award size={14} className="text-yellow-900" />
@@ -113,20 +113,20 @@ export default function SharedProfilePage() {
               <h1 className="text-2xl font-bold">{user.name}</h1>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-400/15 text-yellow-400 capitalize">{role}</span>
             </div>
-            {user.usn && <p className="text-gray-400 text-sm mb-1">{user.usn}</p>}
+            {user.usn && <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">{user.usn}</p>}
             {user.branch && user.year && <p className="text-gray-500 text-sm">{user.branch} · Year {user.year}</p>}
             {user.college && <p className="text-gray-500 text-sm">{user.college}</p>}
-            {user.bio && <p className="text-gray-300 mt-3 max-w-lg">{user.bio}</p>}
+            {user.bio && <p className="text-gray-600 dark:text-gray-300 mt-3 max-w-lg">{user.bio}</p>}
             <div className="flex justify-center md:justify-start gap-3 mt-4">
               {user.github && (
                 <a href={user.github} target="_blank" rel="noopener noreferrer"
-                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-sm text-gray-300 hover:text-white">
+                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
                   <Github size={16} /> <span>{extractUsername(user.github, 'github')}</span>
                 </a>
               )}
               {user.linkedin && (
                 <a href={user.linkedin} target="_blank" rel="noopener noreferrer"
-                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors text-sm text-gray-300 hover:text-white">
+                   className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
                   <Linkedin size={16} /> <span>{extractUsername(user.linkedin, 'linkedin')}</span>
                 </a>
               )}
@@ -142,9 +142,9 @@ export default function SharedProfilePage() {
             { label: 'Certificates', value: certificates.length },
             { label: 'Member since', value: new Date(user.createdAt).getFullYear() },
           ].map(s => (
-            <div key={s.label} className="rounded-xl bg-gray-900 border border-gray-800 p-4 text-center">
+            <div key={s.label} className="rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 text-center">
               <p className="text-2xl font-bold text-yellow-400">{s.value}</p>
-              <p className="text-xs text-gray-400 mt-1">{s.label}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{s.label}</p>
             </div>
           ))}
         </motion.div>
@@ -155,20 +155,20 @@ export default function SharedProfilePage() {
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Calendar size={18} /> Event History</h2>
             <div className="space-y-3">
               {events.map(e => (
-                <div key={e.id} className="flex items-center gap-4 p-4 rounded-xl bg-gray-900 border border-gray-800 hover:border-gray-700 transition-colors">
+                <div key={e.id} className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors">
                   {e.image && <Image src={e.image} alt={e.title} width={60} height={60} unoptimized className="w-14 h-14 rounded-lg object-cover shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium truncate">{e.title}</h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                       {e.date && <span>{new Date(e.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>}
-                      {e.type && <span className="px-1.5 py-0.5 rounded bg-gray-800 text-xs">{e.type}</span>}
+                      {e.type && <span className="px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-800 text-xs">{e.type}</span>}
                       {e.teamName && <span className="text-yellow-400/70 text-xs">Team: {e.teamName}</span>}
                     </div>
                   </div>
                   <span className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${
                     e.registrationStatus === 'registered' ? 'bg-green-500/15 text-green-400' :
                     e.registrationStatus === 'attended' ? 'bg-blue-500/15 text-blue-400' :
-                    'bg-gray-700 text-gray-400'
+                    'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                   }`}>{e.registrationStatus}</span>
                 </div>
               ))}
@@ -182,9 +182,9 @@ export default function SharedProfilePage() {
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Award size={18} /> Certificates</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {certificates.map((cert, i) => (
-                <div key={i} className="p-4 rounded-xl bg-gray-900 border border-gray-800">
+                <div key={i} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
                   <h3 className="font-medium">{cert.title}</h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-400 mt-1">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {cert.date && <span>{new Date(cert.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>}
                     {cert.issuer && <span>· {cert.issuer}</span>}
                   </div>
@@ -196,13 +196,13 @@ export default function SharedProfilePage() {
 
         {/* Empty state */}
         {events.length === 0 && certificates.length === 0 && (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-gray-400 dark:text-gray-500">
             <p>No events or certificates yet.</p>
           </div>
         )}
 
         {/* Footer */}
-        <div className="text-center py-8 border-t border-gray-800 mt-10">
+        <div className="text-center py-8 border-t border-gray-200 dark:border-gray-800 mt-10">
           <p className="text-sm text-gray-500">CSI NMAMIT · Computer Society of India</p>
           <Link href="/" className="text-xs text-yellow-400 hover:underline mt-1 inline-block">csinmamit.in</Link>
         </div>
