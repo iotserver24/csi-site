@@ -50,7 +50,7 @@ const Features: React.FC = () => {
 
   return (
     <section
-      className="relative py-20 sm:py-28 bg-white dark:bg-[#07080d] text-gray-900 dark:text-white overflow-hidden border-y border-gray-100 dark:border-white/5"
+      className="relative py-14 sm:py-28 bg-white dark:bg-[#07080d] text-gray-900 dark:text-white overflow-x-hidden border-y border-gray-100 dark:border-white/5"
       ref={ref}
     >
       <div
@@ -71,18 +71,18 @@ const Features: React.FC = () => {
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-sky-600 dark:text-sky-400/90 mb-3">
               // program surface
             </p>
-            <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight leading-[1.05]">
+            <h2 className="font-display text-2xl sm:text-5xl font-extrabold tracking-tight leading-[1.08]">
               A full stack of
               <br />
               <span className="text-gray-400 dark:text-white/40">campus tech energy</span>
             </h2>
           </motion.div>
           <p className="text-sm text-gray-500 dark:text-white/45 max-w-sm leading-relaxed">
-            Click any module. Structured activities so members leave with skills, portfolio pieces, and people.
+            Tap any module. Structured activities so members leave with skills, portfolio pieces, and people.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-3 sm:gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-4">
           {activities.map((item, index) => {
             const active = selected === index
             const isHero = index === 0
@@ -94,10 +94,12 @@ const Features: React.FC = () => {
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.4, delay: 0.05 * index }}
                 onClick={() => setSelected(index)}
-                onMouseEnter={() => setSelected(index)}
+                onMouseEnter={() => {
+                  if (window.matchMedia('(pointer: fine)').matches) setSelected(index)
+                }}
                 onFocus={() => setSelected(index)}
-                className={`group relative text-left rounded-3xl border p-6 sm:p-8 overflow-hidden transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
-                  isHero ? 'lg:col-span-7 min-h-[220px]' : 'lg:col-span-5'
+                className={`group relative text-left rounded-2xl sm:rounded-3xl border p-4 sm:p-8 overflow-hidden transition-all duration-300 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 active:scale-[0.99] ${
+                  isHero ? 'sm:col-span-2 lg:col-span-7 lg:min-h-[220px]' : 'lg:col-span-5'
                 } ${
                   active
                     ? 'border-sky-400/40 dark:border-white/25 bg-sky-50/80 dark:bg-white/[0.07] shadow-lg shadow-sky-500/5'
@@ -110,24 +112,24 @@ const Features: React.FC = () => {
                   }`}
                 />
                 <div className="relative z-10 flex h-full flex-col">
-                  <div className="flex items-start justify-between gap-4 mb-6">
+                  <div className="flex items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <span
-                      className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-colors ${
+                      className={`flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl sm:rounded-2xl border transition-colors ${
                         active
                           ? 'border-sky-300/50 dark:border-white/20 bg-white dark:bg-white/10 text-sky-600 dark:text-white'
                           : 'border-gray-200 dark:border-white/10 bg-white dark:bg-black/30 text-gray-500 dark:text-white/60'
                       }`}
                     >
-                      <item.icon size={22} />
+                      <item.icon size={20} />
                     </span>
                     <div className="text-right">
-                      <p className="font-display text-3xl font-extrabold tracking-tight">{item.count}</p>
-                      <p className="font-mono text-[10px] uppercase tracking-wider text-gray-400 dark:text-white/35">
+                      <p className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">{item.count}</p>
+                      <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wider text-gray-400 dark:text-white/35">
                         {item.label}
                       </p>
                     </div>
                   </div>
-                  <h3 className="font-display text-xl sm:text-2xl font-bold mb-2">{item.title}</h3>
+                  <h3 className="font-display text-lg sm:text-2xl font-bold mb-1.5 sm:mb-2">{item.title}</h3>
                   <p
                     className={`text-sm leading-relaxed transition-all ${
                       active

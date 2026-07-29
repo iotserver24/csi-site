@@ -37,7 +37,7 @@ const Testimonials: React.FC = () => {
   const prev = () => setCurrentIndex(prev => (prev - 1 + testimonials.length) % testimonials.length)
 
   return (
-    <section className="py-20 sm:py-28 bg-white dark:bg-[#05060a] text-gray-900 dark:text-white border-y border-gray-100 dark:border-white/5" ref={ref}>
+    <section className="py-14 sm:py-28 bg-white dark:bg-[#05060a] text-gray-900 dark:text-white border-y border-gray-100 dark:border-white/5 overflow-x-hidden" ref={ref}>
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -48,7 +48,7 @@ const Testimonials: React.FC = () => {
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-pink-600 dark:text-pink-300/90 mb-3">
             // signal
           </p>
-          <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
+          <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
             Voices from CSI
           </h2>
           <p className="text-gray-500 dark:text-white/45 max-w-xl mx-auto text-sm sm:text-base">

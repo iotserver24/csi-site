@@ -36,19 +36,19 @@ const Highlights: React.FC = () => {
   const selected = currentIndex !== null ? highlights[currentIndex] : null
 
   return (
-    <section className="py-20 sm:py-28 relative bg-zinc-50 dark:bg-[#07080d] text-gray-900 dark:text-white border-t border-gray-100 dark:border-white/5" ref={ref}>
+    <section className="py-14 sm:py-28 relative bg-zinc-50 dark:bg-[#07080d] text-gray-900 dark:text-white border-t border-gray-100 dark:border-white/5 overflow-x-hidden" ref={ref}>
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
-          className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10 sm:mb-14"
+          className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 sm:gap-4 mb-8 sm:mb-14"
         >
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-600 dark:text-amber-300/90 mb-3">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-600 dark:text-amber-300/90 mb-2 sm:mb-3">
               // capture reel
             </p>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">
+            <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight">
               Event highlights
             </h2>
           </div>
@@ -57,7 +57,7 @@ const Highlights: React.FC = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3 auto-rows-[160px] sm:auto-rows-[220px]">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 auto-rows-[120px] xs:auto-rows-[140px] sm:auto-rows-[220px]">
           {highlights.map((item, index) => (
             <motion.button
               type="button"
@@ -65,8 +65,8 @@ const Highlights: React.FC = () => {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={inView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.4, delay: index * 0.03 }}
-              className={`relative overflow-hidden rounded-2xl group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950
-                ${index === 0 ? 'md:col-span-2' : ''}`}
+              className={`relative overflow-hidden rounded-xl sm:rounded-2xl group text-left touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950
+                ${index === 0 ? 'col-span-2 row-span-1 md:col-span-2' : ''}`}
               onClick={() => open(index)}
             >
               <Image
@@ -76,10 +76,10 @@ const Highlights: React.FC = () => {
                 sizes="(max-width: 768px) 50vw, 33vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 flex items-end justify-between gap-2">
-                <h3 className="text-white text-sm sm:text-base font-semibold">{item.title}</h3>
-                <Maximize2 size={16} className="text-white/80 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-4 flex items-end justify-between gap-1">
+                <h3 className="text-white text-xs sm:text-base font-semibold line-clamp-2 leading-snug">{item.title}</h3>
+                <Maximize2 size={14} className="text-white/80 shrink-0 opacity-70 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" />
               </div>
             </motion.button>
           ))}
@@ -91,7 +91,7 @@ const Highlights: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 pt-24 bg-black/90 backdrop-blur-sm"
+              className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 pt-16 sm:pt-24 bg-black/90 backdrop-blur-sm"
               onClick={close}
             >
               <motion.div
@@ -104,7 +104,7 @@ const Highlights: React.FC = () => {
                 <button
                   type="button"
                   onClick={close}
-                  className="absolute -top-12 right-0 sm:top-4 sm:right-4 z-10 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+                  className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 p-2.5 rounded-lg bg-black/50 hover:bg-white/20 text-white touch-manipulation"
                   aria-label="Close"
                 >
                   <X size={22} />
@@ -112,7 +112,7 @@ const Highlights: React.FC = () => {
                 <button
                   type="button"
                   onClick={prev}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+                  className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10 p-2.5 rounded-lg bg-black/50 hover:bg-white/20 text-white touch-manipulation"
                   aria-label="Previous"
                 >
                   <ChevronLeft size={22} />
@@ -120,21 +120,21 @@ const Highlights: React.FC = () => {
                 <button
                   type="button"
                   onClick={next}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white"
+                  className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-10 p-2.5 rounded-lg bg-black/50 hover:bg-white/20 text-white touch-manipulation"
                   aria-label="Next"
                 >
                   <ChevronRight size={22} />
                 </button>
-                <div className="relative w-full aspect-[16/10] max-h-[75vh] rounded-xl overflow-hidden bg-black">
+                <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] max-h-[70vh] rounded-xl overflow-hidden bg-black">
                   <Image
                     src={selected.image}
                     alt={selected.title}
                     fill
-                    sizes="90vw"
+                    sizes="100vw"
                     className="object-contain"
                   />
                 </div>
-                <p className="mt-3 text-center text-white font-medium">{selected.title}</p>
+                <p className="mt-3 text-center text-white font-medium text-sm sm:text-base px-2">{selected.title}</p>
                 <p className="text-center text-white/50 text-xs mt-1">
                   {currentIndex + 1} / {highlights.length}
                 </p>

@@ -71,7 +71,7 @@ const UpcomingEvents: React.FC = () => {
 
   return (
     <section
-      className="relative py-16 sm:py-24 bg-zinc-50 dark:bg-[#05060a] text-gray-900 dark:text-white border-t border-gray-100 dark:border-white/5"
+      className="relative py-12 sm:py-24 bg-zinc-50 dark:bg-[#05060a] text-gray-900 dark:text-white border-t border-gray-100 dark:border-white/5 overflow-x-hidden"
       ref={ref}
     >
       <div className="container-custom">
@@ -84,7 +84,7 @@ const UpcomingEvents: React.FC = () => {
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400/90 mb-3">
               // live feed
             </p>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">
+            <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight">
               What’s next
             </h2>
           </div>

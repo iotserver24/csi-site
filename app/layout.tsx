@@ -11,6 +11,16 @@ export const metadata = {
   description: 'Computer Society of India, NMAMIT chapter.',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fafafa' },
+    { media: '(prefers-color-scheme: dark)', color: '#05060a' },
+  ],
+}
+
 /** Runs before paint so light/dark matches localStorage and avoids flash */
 const themeInitScript = `
 (function(){

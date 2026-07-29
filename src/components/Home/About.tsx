@@ -29,7 +29,7 @@ const About: React.FC = () => {
 
   return (
     <section
-      className="relative py-20 sm:py-28 bg-white dark:bg-[#0a0b12] text-gray-900 dark:text-white overflow-hidden"
+      className="relative py-14 sm:py-28 bg-white dark:bg-[#0a0b12] text-gray-900 dark:text-white overflow-x-hidden"
       ref={ref}
     >
       <div className="container-custom">
@@ -42,7 +42,7 @@ const About: React.FC = () => {
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-violet-600 dark:text-violet-300/90 mb-3">
               // about chapter
             </p>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight mb-4 leading-tight">
+            <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 sm:mb-4 leading-tight">
               Where campus tech
               <br />
               <span className="text-gray-400 dark:text-white/40">gets serious.</span>

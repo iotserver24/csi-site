@@ -67,12 +67,12 @@ const Navbar: React.FC = () => {
       <nav
         className={`fixed inset-x-0 z-50 transition-all duration-500
           ${scrolled
-            ? 'top-4 mx-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border border-gray-100/80 dark:border-gray-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-black/20'
-            : 'top-0 bg-transparent'
+            ? 'top-2 mx-2 sm:top-4 sm:mx-4 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border border-gray-100/80 dark:border-gray-800 rounded-xl sm:rounded-2xl shadow-lg shadow-black/5 dark:shadow-black/20'
+            : 'top-0 bg-white/70 dark:bg-gray-950/50 backdrop-blur-md sm:bg-transparent sm:dark:bg-transparent sm:backdrop-blur-none border-b border-gray-200/60 dark:border-white/5 sm:border-transparent'
           }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-[68px]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16 lg:h-[68px]">
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group shrink-0">
