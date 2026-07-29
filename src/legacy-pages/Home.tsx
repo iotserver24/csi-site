@@ -1,4 +1,4 @@
-import ScrollHero from '../components/Home/ScrollHero'
+import Hero from '../components/Home/Hero'
 import About from '../components/Home/About'
 import Features from '../components/Home/Features'
 import Highlights from '../components/Home/Highlights'
@@ -7,9 +7,8 @@ import CTA from '../components/Home/CTA'
 
 const Home = () => {
   return (
-    // Do not put overflow-x-hidden here — it breaks position:sticky on ScrollHero.
-    <div>
-      <ScrollHero />
+    <div className="overflow-x-hidden">
+      <Hero />
       <Features />
       <About />
       <Highlights />
