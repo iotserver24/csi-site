@@ -58,6 +58,9 @@ const Navbar: React.FC = () => {
   ]
   const isActive = (p: string): boolean => pathname === p
 
+  // Full-screen terminal experiment — no site chrome
+  if (pathname === '/1') return null
+
   return (
     <>
       {/* ── Main nav bar ─────────────────────────────────────────────────── */}

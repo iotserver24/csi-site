@@ -96,6 +96,15 @@ export default function TerminalHome() {
   const userLabel = user?.name?.split(' ')[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'guest'
   const promptHost = `${userLabel}@csi-nmamit`
 
+  // Lock page scroll while terminal owns the viewport
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [])
+
   // Boot sequence
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = []
@@ -211,78 +220,82 @@ export default function TerminalHome() {
   const visibleBoot = useMemo(() => BOOT_LINES.slice(0, shownBoot), [shownBoot])
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#0c0c0c] text-[#d4d4d4] font-mono text-[13px] sm:text-sm selection:bg-emerald-500/30">
-      {/* Title bar */}
-      <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-[#161616] px-3 py-2 shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex gap-1.5 shrink-0">
-            <Link
-              href="/"
-              className="h-3 w-3 rounded-full bg-[#ff5f57] hover:brightness-110"
-              title="Back to main site"
-              aria-label="Close terminal experiment"
-            />
-            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-          </div>
-          <span className="truncate text-[11px] text-white/50">
-            csi-nmamit — zsh — {bootVisible ? 'boot' : CWD}
-          </span>
-        </div>
-        <div className="flex items-center gap-3 text-[10px] text-white/40 shrink-0">
-          <span className="hidden sm:inline">experiment /1</span>
-          <Link href="/" className="text-emerald-400/80 hover:text-emerald-300 underline-offset-2 hover:underline">
-            exit → /
-          </Link>
-        </div>
-      </div>
-
-      {/* BOOT OVERLAY */}
+    <div className="fixed inset-0 z-[200] flex flex-col bg-[#0c0c0c] text-[#d4d4d4] font-mono text-[13px] sm:text-sm selection:bg-emerald-500/30">
+      {/* BOOT — full screen, no site chrome */}
       {bootVisible && (
         <div
-          className={`absolute inset-0 top-[41px] z-20 overflow-y-auto bg-black px-4 py-6 sm:px-8 transition-opacity duration-500 ${
+          className={`absolute inset-0 z-50 flex flex-col bg-black transition-opacity duration-500 ${
             bootDone ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
           aria-live="polite"
           aria-busy={!bootDone}
         >
-          <pre className="whitespace-pre-wrap leading-relaxed">
-            {visibleBoot.map((line, i) => (
-              <div key={i} className="min-h-[1.35em]">
-                {line.ok ? (
-                  <span>
-                    <span className="text-emerald-400">[  OK  ]</span>
-                    <span className="text-white/70">{line.text.replace('[  OK  ]', '')}</span>
-                  </span>
-                ) : line.dim ? (
-                  <span className="text-white/40">{line.text}</span>
-                ) : (
-                  <span className="text-white/85">{line.text}</span>
-                )}
-              </div>
-            ))}
-            {!bootDone && (
-              <span
-                className={`inline-block w-2 h-4 ml-0.5 align-middle bg-emerald-400 ${
-                  cursorOn ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-            )}
-            <div ref={bootEndRef} />
-          </pre>
+          <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
+            <p className="text-[10px] text-white/30 mb-4 tracking-wide">CSI NMAMIT · system console · restart</p>
+            <pre className="whitespace-pre-wrap leading-relaxed">
+              {visibleBoot.map((line, i) => (
+                <div key={i} className="min-h-[1.35em]">
+                  {line.ok ? (
+                    <span>
+                      <span className="text-emerald-400">[  OK  ]</span>
+                      <span className="text-white/70">{line.text.replace('[  OK  ]', '')}</span>
+                    </span>
+                  ) : line.dim ? (
+                    <span className="text-white/40">{line.text}</span>
+                  ) : (
+                    <span className="text-white/85">{line.text}</span>
+                  )}
+                </div>
+              ))}
+              {!bootDone && (
+                <span
+                  className={`inline-block w-2 h-4 ml-0.5 align-middle bg-emerald-400 ${
+                    cursorOn ? 'opacity-100' : 'opacity-0'
+                  }`}
+                />
+              )}
+              <div ref={bootEndRef} />
+            </pre>
 
-          {/* Fake progress bar */}
-          <div className="mt-8 max-w-md">
-            <div className="flex justify-between text-[10px] text-white/35 mb-1.5 font-mono">
-              <span>systemd[1]: restart</span>
-              <span>{Math.min(100, Math.round((shownBoot / BOOT_LINES.length) * 100))}%</span>
+            <div className="mt-8 max-w-md">
+              <div className="flex justify-between text-[10px] text-white/35 mb-1.5">
+                <span>systemd[1]: restart</span>
+                <span>{Math.min(100, Math.round((shownBoot / BOOT_LINES.length) * 100))}%</span>
+              </div>
+              <div className="h-1 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 transition-all duration-200"
+                  style={{ width: `${Math.min(100, (shownBoot / BOOT_LINES.length) * 100)}%` }}
+                />
+              </div>
             </div>
-            <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-              <div
-                className="h-full bg-emerald-500 transition-all duration-200"
-                style={{ width: `${Math.min(100, (shownBoot / BOOT_LINES.length) * 100)}%` }}
+          </div>
+        </div>
+      )}
+
+      {/* Title bar — only after boot */}
+      {!bootVisible && (
+        <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-[#161616] px-3 py-2.5 shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex gap-1.5 shrink-0">
+              <Link
+                href="/"
+                className="h-3 w-3 rounded-full bg-[#ff5f57] hover:brightness-110"
+                title="Back to main site"
+                aria-label="Close terminal experiment"
               />
+              <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+              <span className="h-3 w-3 rounded-full bg-[#28c840]" />
             </div>
+            <span className="truncate text-[11px] text-white/50">
+              csi-nmamit — zsh — {CWD}
+            </span>
+          </div>
+          <div className="flex items-center gap-3 text-[10px] text-white/40 shrink-0">
+            <span className="hidden sm:inline">experiment /1</span>
+            <Link href="/" className="text-emerald-400/80 hover:text-emerald-300 underline-offset-2 hover:underline">
+              exit → /
+            </Link>
           </div>
         </div>
       )}
