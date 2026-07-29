@@ -1,32 +1,40 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+/**
+ * Apple-style scroll-scrub hero
+ * Video → image sequence → sticky full-bleed canvas → scroll maps to frame index.
+ * Copy sits above the sequence (z-index), not inside the canvas.
+ * Pattern: preload frames → sticky pin → progress = scrollInSection / scrollRange → draw frame.
+ */
+
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, ChevronDown, Sparkles } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
-const FRAME_COUNT = 72
-const FRAME_PAD = 3
+/** Must match public/scroll-frames/frame-XXX.webp count */
+const FRAME_COUNT = 75
 const frameSrc = (i: number) =>
-  `/scroll-frames/frame-${String(i).padStart(FRAME_PAD, '0')}.webp`
+  `/scroll-frames/frame-${String(i).padStart(3, '0')}.webp`
 
-function clamp(n: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, n))
-}
+const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n))
 
 const ScrollHero: React.FC = () => {
   const { user, signInWithGoogle, authLoading } = useAuth()
+
   const sectionRef = useRef<HTMLElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const imagesRef = useRef<(HTMLImageElement | null)[]>([])
-  const frameRef = useRef(0)
-  const rafRef = useRef(0)
-  const [progress, setProgress] = useState(0)
+  const imagesRef = useRef<HTMLImageElement[]>([])
+  const drawnRef = useRef(-1)
+  const targetRef = useRef(0)
+  const tickingRef = useRef(false)
+  const readyRef = useRef(false)
+
   const [ready, setReady] = useState(false)
   const [loadPct, setLoadPct] = useState(0)
+  const [progress, setProgress] = useState(0)
   const [reducedMotion, setReducedMotion] = useState(false)
 
-  // prefers-reduced-motion
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     const apply = () => setReducedMotion(mq.matches)
@@ -35,212 +43,229 @@ const ScrollHero: React.FC = () => {
     return () => mq.removeEventListener('change', apply)
   }, [])
 
-  const drawFrame = useCallback((index: number) => {
+  /** Cover-fit draw of frame index onto canvas */
+  const paint = (index: number) => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    const img = imagesRef.current[index]
+    if (!canvas || !img?.naturalWidth) return false
 
-    // Prefer requested frame; fall back to nearest loaded frame so we never blank out
-    let img = imagesRef.current[index]
-    if (!img?.complete || !img.naturalWidth) {
-      for (let d = 1; d < FRAME_COUNT; d++) {
-        const a = imagesRef.current[index - d]
-        const b = imagesRef.current[index + d]
-        if (a?.complete && a.naturalWidth) {
-          img = a
-          break
-        }
-        if (b?.complete && b.naturalWidth) {
-          img = b
-          break
-        }
-      }
-    }
-    if (!img?.complete || !img.naturalWidth) return
+    const parent = canvas.parentElement
+    const cssW = parent?.clientWidth || canvas.clientWidth
+    const cssH = parent?.clientHeight || canvas.clientHeight
+    if (!cssW || !cssH) return false
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    const w = canvas.clientWidth || canvas.parentElement?.clientWidth || 0
-    const h = canvas.clientHeight || canvas.parentElement?.clientHeight || 0
-    if (w === 0 || h === 0) return
-
-    const needW = Math.round(w * dpr)
-    const needH = Math.round(h * dpr)
-    if (canvas.width !== needW || canvas.height !== needH) {
-      canvas.width = needW
-      canvas.height = needH
+    const bw = Math.round(cssW * dpr)
+    const bh = Math.round(cssH * dpr)
+    if (canvas.width !== bw || canvas.height !== bh) {
+      canvas.width = bw
+      canvas.height = bh
     }
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    const ctx = canvas.getContext('2d', { alpha: false })
+    if (!ctx) return false
 
-    // cover-fit
-    const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight)
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    const scale = Math.max(cssW / img.naturalWidth, cssH / img.naturalHeight)
     const dw = img.naturalWidth * scale
     const dh = img.naturalHeight * scale
-    const dx = (w - dw) / 2
-    const dy = (h - dh) / 2
+    const dx = (cssW - dw) / 2
+    const dy = (cssH - dh) / 2
     ctx.drawImage(img, dx, dy, dw, dh)
-  }, [])
+    drawnRef.current = index
+    return true
+  }
 
-  // Preload frames
+  // Preload entire sequence (Apple / Scrollsequence pattern)
   useEffect(() => {
     if (reducedMotion) {
+      readyRef.current = true
       setReady(true)
       return
     }
 
     let cancelled = false
-    const images: (HTMLImageElement | null)[] = new Array(FRAME_COUNT).fill(null)
-    imagesRef.current = images
+    const imgs: HTMLImageElement[] = []
+    imagesRef.current = imgs
     let loaded = 0
 
-    const onOne = () => {
+    const bump = () => {
       if (cancelled) return
       loaded += 1
       setLoadPct(Math.round((loaded / FRAME_COUNT) * 100))
+
+      // First good frame → paint immediately so UI isn't empty
+      if (loaded === 1 || (imgs[0]?.naturalWidth && drawnRef.current < 0)) {
+        paint(0)
+      }
+
       if (loaded >= FRAME_COUNT) {
+        readyRef.current = true
         setReady(true)
-        drawFrame(0)
-      } else if (loaded === 1) {
-        // first frame ASAP for paint
-        drawFrame(0)
+        paint(targetRef.current)
       }
     }
 
     for (let i = 0; i < FRAME_COUNT; i++) {
       const img = new Image()
       img.decoding = 'async'
+      // sequential decode hint for smoother scrub after load
       img.src = frameSrc(i)
-      img.onload = onOne
-      img.onerror = onOne
-      images[i] = img
+      img.onload = bump
+      img.onerror = bump
+      imgs.push(img)
     }
 
     return () => {
       cancelled = true
     }
-  }, [reducedMotion, drawFrame])
+  }, [reducedMotion])
 
-  // Scroll → frame
+  // Scroll → frame (single source of truth; rAF coalesced)
   useEffect(() => {
     if (reducedMotion) return
 
-    const onScroll = () => {
-      if (rafRef.current) return
-      rafRef.current = requestAnimationFrame(() => {
-        rafRef.current = 0
-        const section = sectionRef.current
-        if (!section) return
-
-        const rect = section.getBoundingClientRect()
-        const scrollable = section.offsetHeight - window.innerHeight
-        if (scrollable <= 0) return
-
-        // how far we've scrolled through the pin section
-        const scrolled = clamp(-rect.top, 0, scrollable)
-        const p = scrolled / scrollable
-        const idx = Math.round(p * (FRAME_COUNT - 1))
-
-        setProgress(p)
-        frameRef.current = idx
-        drawFrame(idx)
-      })
+    const readProgress = () => {
+      const section = sectionRef.current
+      if (!section) return 0
+      const total = section.offsetHeight - window.innerHeight
+      if (total <= 0) return 0
+      const scrolled = clamp(-section.getBoundingClientRect().top, 0, total)
+      return scrolled / total
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
-    onScroll()
+    const tick = () => {
+      tickingRef.current = false
+      const p = readProgress()
+      targetRef.current = Math.min(
+        FRAME_COUNT - 1,
+        Math.floor(p * FRAME_COUNT)
+      )
+      setProgress(p)
+
+      if (targetRef.current !== drawnRef.current) {
+        // Prefer exact frame; if still loading, nearest loaded
+        let idx = targetRef.current
+        if (!imagesRef.current[idx]?.naturalWidth) {
+          for (let d = 1; d < FRAME_COUNT; d++) {
+            if (imagesRef.current[idx - d]?.naturalWidth) {
+              idx = idx - d
+              break
+            }
+            if (imagesRef.current[idx + d]?.naturalWidth) {
+              idx = idx + d
+              break
+            }
+          }
+        }
+        paint(idx)
+      }
+    }
+
+    const onScrollOrResize = () => {
+      if (tickingRef.current) return
+      tickingRef.current = true
+      requestAnimationFrame(tick)
+    }
+
+    window.addEventListener('scroll', onScrollOrResize, { passive: true })
+    window.addEventListener('resize', onScrollOrResize, { passive: true })
+    tick()
+
     return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      window.removeEventListener('scroll', onScrollOrResize)
+      window.removeEventListener('resize', onScrollOrResize)
     }
-  }, [reducedMotion, drawFrame, ready])
+  }, [reducedMotion, ready])
 
-  // Redraw on resize when ready
-  useEffect(() => {
-    if (!ready || reducedMotion) return
-    const onResize = () => drawFrame(frameRef.current)
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [ready, reducedMotion, drawFrame])
+  // Copy beats tied to scroll (text ABOVE frames)
+  const phase =
+    progress < 0.22 ? 0 : progress < 0.55 ? 1 : progress < 0.82 ? 2 : 3
 
-  const introOpacity = reducedMotion ? 1 : clamp(1 - progress * 2.2, 0, 1)
-  const midOpacity = reducedMotion
-    ? 0
-    : progress > 0.28 && progress < 0.72
-      ? clamp(1 - Math.abs(progress - 0.5) * 5, 0, 1)
-      : 0
-  const endOpacity = reducedMotion ? 0 : clamp((progress - 0.72) / 0.22, 0, 1)
-  const perspective = reducedMotion ? 0 : (progress - 0.5) * 8
+  const phaseOpacity = (id: number) => {
+    if (reducedMotion) return id === 0 ? 1 : 0
+    // soft crossfade windows
+    const centers = [0.08, 0.38, 0.68, 0.92]
+    const dist = Math.abs(progress - centers[id])
+    return clamp(1 - dist * 4.2, 0, 1)
+  }
 
   return (
     <section
       ref={sectionRef}
-      className={`relative ${reducedMotion ? 'min-h-[88vh]' : 'h-[220vh]'}`}
-      aria-label="CSI cinematic intro"
+      // Tall track = more scroll distance → smoother “live” scrub
+      className={reducedMotion ? 'relative min-h-[90vh]' : 'relative h-[320vh]'}
+      aria-label="CSI scroll animation"
     >
+      {/* Sticky stage: frames full-bleed, UI layered on top */}
       <div
-        className={`${reducedMotion ? 'relative' : 'sticky top-0'} h-screen min-h-[560px] w-full overflow-hidden bg-gray-950`}
+        className={
+          reducedMotion
+            ? 'relative min-h-[90vh] w-full bg-black'
+            : 'sticky top-0 h-screen w-full overflow-hidden bg-black'
+        }
       >
-        {/* Frame canvas / fallback */}
-        <div
-          className="absolute inset-0"
-          style={{
-            transform: reducedMotion
-              ? undefined
-              : `perspective(1200px) rotateX(${perspective * 0.15}deg) scale(${1 + progress * 0.04})`,
-            transformOrigin: 'center center',
-          }}
-        >
-          {reducedMotion ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src="/hero.jpg"
-              alt="CSI NMAMIT community"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
-            <canvas
-              ref={canvasRef}
-              className="absolute inset-0 h-full w-full"
-              aria-hidden
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/70" />
-          <div
-            className="absolute inset-0 opacity-30"
-            style={{
-              background:
-                'radial-gradient(ellipse 80% 50% at 50% 20%, rgba(59,130,246,0.35) 0%, transparent 55%)',
-            }}
+        {/* LAYER 0 — frame sequence (the “video”) */}
+        {reducedMotion ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src="/hero.jpg"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
           />
-        </div>
+        ) : (
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 h-full w-full block"
+            aria-hidden
+          />
+        )}
 
-        {/* Loading */}
+        {/* LAYER 1 — readability scrim (keeps text crisp over bright frames) */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.45) 70%, rgba(0,0,0,0.75) 100%)',
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-40"
+          style={{
+            background:
+              'radial-gradient(ellipse 70% 50% at 50% 30%, rgba(37,99,235,0.25) 0%, transparent 60%)',
+          }}
+        />
+
+        {/* Loading gate */}
         {!ready && !reducedMotion && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-gray-950 text-white">
-            <div className="h-1 w-40 overflow-hidden rounded-full bg-white/10">
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/90 text-white">
+            <div className="h-1 w-48 overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-primary-500 transition-all duration-200"
+                className="h-full rounded-full bg-sky-400 transition-all duration-150"
                 style={{ width: `${loadPct}%` }}
               />
             </div>
-            <p className="mt-3 text-xs tracking-widest uppercase text-white/50">Loading sequence</p>
+            <p className="mt-4 text-[11px] font-medium uppercase tracking-[0.2em] text-white/50">
+              Loading animation · {loadPct}%
+            </p>
           </div>
         )}
 
-        {/* Overlays */}
+        {/* LAYER 2 — UI / text ABOVE the sequence */}
         <div className="relative z-10 flex h-full flex-col">
-          <div className="container-custom flex flex-1 flex-col justify-center pt-24 pb-16">
-            {/* Intro copy */}
+          <div className="container-custom relative flex flex-1 flex-col justify-center pt-28 pb-20">
+            {/* Phase 0 — intro + CTAs */}
             <div
-              className="max-w-2xl transition-opacity duration-150"
-              style={{ opacity: introOpacity, pointerEvents: introOpacity < 0.15 ? 'none' : 'auto' }}
+              className="max-w-2xl transition-opacity duration-200"
+              style={{
+                opacity: phaseOpacity(0),
+                pointerEvents: phase === 0 ? 'auto' : 'none',
+              }}
             >
               <div className="mb-5 inline-flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 backdrop-blur">
-                  <Sparkles size={13} className="text-primary-300" />
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 backdrop-blur-md">
+                  <Sparkles size={13} className="text-sky-300" />
                   <span className="text-xs font-semibold tracking-wide text-white/90">
                     CSI NMAMIT · NMAM Institute of Technology
                   </span>
@@ -252,7 +277,7 @@ const ScrollHero: React.FC = () => {
                 </span>
               </div>
 
-              <h1 className="mb-4 text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              <h1 className="mb-4 text-4xl font-bold leading-[1.06] tracking-tight text-white sm:text-5xl lg:text-6xl">
                 {user ? (
                   <>
                     Welcome back,{' '}
@@ -274,8 +299,8 @@ const ScrollHero: React.FC = () => {
               </h1>
 
               <p className="mb-8 max-w-lg text-base leading-relaxed text-white/70 sm:text-lg">
-                Computer Society of India student chapter at NMAMIT — workshops, hackathons, talks,
-                and a community of people who actually build.
+                Computer Society of India student chapter at NMAMIT — workshops,
+                hackathons, talks, and a community of people who actually build.
               </p>
 
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -290,7 +315,7 @@ const ScrollHero: React.FC = () => {
                     </Link>
                     <Link
                       href="/profile"
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 py-3 font-semibold text-white backdrop-blur transition-colors hover:bg-white/10"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/15"
                     >
                       My profile
                     </Link>
@@ -308,7 +333,7 @@ const ScrollHero: React.FC = () => {
                     </button>
                     <Link
                       href="/recruit"
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/5 px-6 py-3 font-semibold text-white backdrop-blur transition-colors hover:bg-white/10"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/15"
                     >
                       Join CSI
                     </Link>
@@ -317,50 +342,65 @@ const ScrollHero: React.FC = () => {
               </div>
             </div>
 
-            {/* Mid beat */}
-            <div
-              className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 px-6 text-center transition-opacity duration-150"
-              style={{ opacity: midOpacity }}
-              aria-hidden={midOpacity < 0.05}
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-300 mb-3">
-                Campus tech culture
-              </p>
-              <p className="mx-auto max-w-xl text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                Learn by building — with peers who care about the craft.
-              </p>
-            </div>
-
-            {/* End beat */}
-            <div
-              className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 px-6 text-center transition-opacity duration-150"
-              style={{ opacity: endOpacity }}
-              aria-hidden={endOpacity < 0.05}
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-300 mb-3">
-                2026–27 season
-              </p>
-              <p className="mx-auto max-w-xl text-2xl font-bold tracking-tight text-white sm:text-4xl">
-                Workshops. Hackathons. Community.
-              </p>
-            </div>
+            {/* Phase 1–3 — story lines (centered, pure overlay) */}
+            {(
+              [
+                {
+                  id: 1,
+                  kicker: 'Hands-on campus tech',
+                  title: 'Workshops that ship real skills.',
+                },
+                {
+                  id: 2,
+                  kicker: 'Build under pressure',
+                  title: 'Hackathons. Demos. Teammates who care.',
+                },
+                {
+                  id: 3,
+                  kicker: '2026–27 season',
+                  title: 'Your chapter. Your community. Join CSI.',
+                },
+              ] as const
+            ).map(beat => (
+              <div
+                key={beat.id}
+                className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 px-6 text-center transition-opacity duration-200"
+                style={{ opacity: phaseOpacity(beat.id) }}
+                aria-hidden={phaseOpacity(beat.id) < 0.08}
+              >
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300">
+                  {beat.kicker}
+                </p>
+                <p className="mx-auto max-w-3xl text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+                  {beat.title}
+                </p>
+              </div>
+            ))}
           </div>
 
-          {/* Scroll hint + progress */}
+          {/* Scroll affordance + scrub progress */}
           {!reducedMotion && (
-            <div className="absolute bottom-6 left-0 right-0 z-10 flex flex-col items-center gap-3">
+            <div className="absolute bottom-7 left-0 right-0 z-20 flex flex-col items-center gap-3">
               <div
-                className="flex flex-col items-center gap-1 text-white/60 transition-opacity"
-                style={{ opacity: introOpacity }}
+                className="flex flex-col items-center gap-1 text-white/55 transition-opacity duration-200"
+                style={{ opacity: phaseOpacity(0) }}
               >
-                <span className="text-[10px] font-medium uppercase tracking-[0.18em]">Scroll to explore</span>
+                <span className="text-[10px] font-medium uppercase tracking-[0.2em]">
+                  Scroll to play
+                </span>
                 <ChevronDown size={18} className="animate-bounce" />
               </div>
-              <div className="h-0.5 w-40 overflow-hidden rounded-full bg-white/15">
-                <div
-                  className="h-full rounded-full bg-white/80 transition-[width] duration-75"
-                  style={{ width: `${progress * 100}%` }}
-                />
+              <div className="flex items-center gap-3">
+                <div className="h-[3px] w-44 overflow-hidden rounded-full bg-white/15 sm:w-56">
+                  <div
+                    className="h-full rounded-full bg-white transition-[width] duration-75 ease-out"
+                    style={{ width: `${progress * 100}%` }}
+                  />
+                </div>
+                <span className="tabular-nums text-[10px] text-white/40">
+                  {String(Math.min(FRAME_COUNT, Math.floor(progress * FRAME_COUNT) + 1)).padStart(2, '0')}
+                  <span className="text-white/25"> / {FRAME_COUNT}</span>
+                </span>
               </div>
             </div>
           )}
