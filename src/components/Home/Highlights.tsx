@@ -36,7 +36,7 @@ const Highlights: React.FC = () => {
   const selected = currentIndex !== null ? highlights[currentIndex] : null
 
   return (
-    <section className="py-20 sm:py-28 relative bg-[#07080d] text-white border-t border-white/5" ref={ref}>
+    <section className="py-20 sm:py-28 relative bg-zinc-50 dark:bg-[#07080d] text-gray-900 dark:text-white border-t border-gray-100 dark:border-white/5" ref={ref}>
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -45,14 +45,14 @@ const Highlights: React.FC = () => {
           className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10 sm:mb-14"
         >
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-300/90 mb-3">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-600 dark:text-amber-300/90 mb-3">
               // capture reel
             </p>
             <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">
               Event highlights
             </h2>
           </div>
-          <p className="text-white/45 max-w-sm md:text-right text-sm leading-relaxed">
+          <p className="text-gray-500 dark:text-white/45 max-w-sm md:text-right text-sm leading-relaxed">
             Moments from workshops, hackathons, and chapter events across campus.
           </p>
         </motion.div>

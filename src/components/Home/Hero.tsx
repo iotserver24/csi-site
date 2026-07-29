@@ -80,14 +80,13 @@ const Hero: React.FC = () => {
   const { hostRef, onPointerMove, glowStyle } = usePointerGlow(true)
   const active = FOCI.find(f => f.id === focus) ?? FOCI[0]
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const idleRef = useRef(true)
 
   useEffect(() => {
     const id = setInterval(() => setTick(t => (t + 1) % 1000), 1000)
     return () => clearInterval(id)
   }, [])
 
-  // Auto-rotate focus gently when idle (paused on interaction)
-  const idleRef = useRef(true)
   useEffect(() => {
     const id = setInterval(() => {
       if (!idleRef.current) return
@@ -126,70 +125,66 @@ const Hero: React.FC = () => {
     <section
       ref={hostRef as React.RefObject<HTMLElement>}
       onPointerMove={onPointerMove}
-      className="relative overflow-hidden bg-[#05060a] text-white pt-24 pb-0"
+      className="relative overflow-hidden bg-zinc-50 text-gray-900 dark:bg-[#05060a] dark:text-white pt-24 pb-0"
     >
-      {/* Layered tech background */}
       <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute inset-0 opacity-70"
+          className="absolute inset-0 opacity-80 dark:opacity-70"
           style={{
             background:
-              'radial-gradient(ellipse 80% 60% at 15% 20%, rgba(37,99,235,0.35) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 85% 70%, rgba(168,85,247,0.22) 0%, transparent 50%), radial-gradient(ellipse 40% 30% at 50% 100%, rgba(14,165,233,0.15) 0%, transparent 40%)',
+              'radial-gradient(ellipse 80% 60% at 15% 20%, rgba(37,99,235,0.18) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 85% 70%, rgba(168,85,247,0.12) 0%, transparent 50%)',
           }}
         />
         <div
-          className="absolute inset-0 opacity-40 transition-[background] duration-200"
+          className="absolute inset-0 opacity-50 dark:opacity-40 transition-[background] duration-200"
           style={glowStyle}
         />
         <div
-          className="absolute inset-0 opacity-[0.12]"
+          className="absolute inset-0 opacity-[0.08] dark:opacity-[0.12]"
           style={{
             backgroundImage:
-              'linear-gradient(rgba(148,163,184,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.35) 1px, transparent 1px)',
+              'linear-gradient(rgba(100,116,139,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(100,116,139,0.4) 1px, transparent 1px)',
             backgroundSize: '64px 64px',
             maskImage: 'radial-gradient(ellipse 70% 70% at 50% 40%, black 20%, transparent 75%)',
           }}
         />
-        {/* Giant watermark */}
-        <div className="absolute -right-8 top-24 select-none font-display text-[clamp(6rem,22vw,14rem)] font-extrabold leading-none tracking-tighter text-white/[0.03]">
+        <div className="absolute -right-8 top-24 select-none font-display text-[clamp(6rem,22vw,14rem)] font-extrabold leading-none tracking-tighter text-gray-900/[0.04] dark:text-white/[0.03]">
           CSI
         </div>
       </div>
 
       <div className="container-custom relative z-10 pb-10 sm:pb-14">
-        {/* Status bar */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2.5 font-mono text-[11px] text-white/55 backdrop-blur-md"
+          className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] px-4 py-2.5 font-mono text-[11px] text-gray-500 dark:text-white/55 backdrop-blur-md"
         >
           <div className="flex items-center gap-3">
-            <Terminal size={13} className="text-emerald-400" />
-            <span className="text-emerald-400/90">system.online</span>
-            <span className="text-white/20">//</span>
+            <Terminal size={13} className="text-emerald-600 dark:text-emerald-400" />
+            <span className="text-emerald-600 dark:text-emerald-400/90">system.online</span>
+            <span className="text-gray-300 dark:text-white/20">//</span>
             <span>csi-nmamit · chapter runtime</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="hidden sm:inline text-white/40">
+            <span className="hidden sm:inline text-gray-400 dark:text-white/40">
               uptime {String(tick).padStart(3, '0')}s
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-soft" />
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-soft" />
               membership open 26–27
             </span>
-            <span className="hidden md:inline-flex items-center gap-1 text-white/40">
+            <span className="hidden md:inline-flex items-center gap-1 text-gray-400 dark:text-white/40">
               <Command size={11} />K palette
             </span>
           </div>
         </motion.div>
 
         <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-stretch">
-          {/* Left: copy + modules */}
           <div className="lg:col-span-7 flex flex-col">
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="font-mono text-[11px] uppercase tracking-[0.22em] text-sky-400/90 mb-4"
+              className="font-mono text-[11px] uppercase tracking-[0.22em] text-sky-600 dark:text-sky-400/90 mb-4"
             >
               Computer Society of India · NMAMIT
             </motion.p>
@@ -202,16 +197,16 @@ const Hero: React.FC = () => {
             >
               {user ? (
                 <>
-                  <span className="text-white/40">// welcome</span>
+                  <span className="text-gray-400 dark:text-white/40">// welcome</span>
                   <br />
                   {user.name?.split(' ')[0] || 'member'}
-                  <span className="text-sky-400">_</span>
+                  <span className="text-sky-500 dark:text-sky-400">_</span>
                 </>
               ) : (
                 <>
                   Build.
                   <br />
-                  <span className="bg-gradient-to-r from-sky-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 dark:from-sky-300 dark:via-blue-400 dark:to-violet-400 bg-clip-text text-transparent">
                     Ship.
                   </span>
                   <br />
@@ -226,13 +221,12 @@ const Hero: React.FC = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
-                className="text-base sm:text-lg text-white/55 max-w-lg mb-7 leading-relaxed"
+                className="text-base sm:text-lg text-gray-500 dark:text-white/55 max-w-lg mb-7 leading-relaxed"
               >
                 {active.line}
               </motion.p>
             </AnimatePresence>
 
-            {/* Module selector — looks like a control panel */}
             <div
               role="tablist"
               aria-label="CSI focus modules"
@@ -252,17 +246,24 @@ const Hero: React.FC = () => {
                       chipRefs.current[i] = el
                     }}
                     onClick={() => selectFocus(f.id)}
-                    className={`relative overflow-hidden rounded-xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
+                    className={`relative overflow-hidden rounded-xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
                       selected
-                        ? 'border-sky-400/50 bg-sky-500/15 shadow-[0_0_24px_-6px_rgba(56,189,248,0.5)]'
-                        : 'border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]'
+                        ? 'border-sky-400/60 bg-sky-500/10 dark:bg-sky-500/15 shadow-[0_0_24px_-6px_rgba(56,189,248,0.45)]'
+                        : 'border-gray-200 dark:border-white/10 bg-white/80 dark:bg-white/[0.03] hover:border-gray-300 dark:hover:border-white/25'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <Icon size={16} className={selected ? 'text-sky-300' : 'text-white/45'} />
-                      <span className="font-mono text-[10px] text-white/30">{f.tag}</span>
+                      <Icon
+                        size={16}
+                        className={selected ? 'text-sky-600 dark:text-sky-300' : 'text-gray-400 dark:text-white/45'}
+                      />
+                      <span className="font-mono text-[10px] text-gray-400 dark:text-white/30">{f.tag}</span>
                     </div>
-                    <p className={`text-xs font-semibold ${selected ? 'text-white' : 'text-white/65'}`}>
+                    <p
+                      className={`text-xs font-semibold ${
+                        selected ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-white/65'
+                      }`}
+                    >
                       {f.label}
                     </p>
                   </button>
@@ -275,14 +276,14 @@ const Hero: React.FC = () => {
                 <>
                   <Link
                     href="/events"
-                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-gray-950 hover:bg-sky-100 transition-colors"
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gray-900 dark:bg-white px-6 py-3.5 text-sm font-bold text-white dark:text-gray-950 hover:opacity-90 transition-opacity"
                   >
                     Open events
                     <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
                   </Link>
                   <Link
                     href="/profile"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-white/15 bg-white dark:bg-white/5 px-6 py-3.5 text-sm font-semibold text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
                   >
                     Dashboard
                   </Link>
@@ -293,14 +294,14 @@ const Hero: React.FC = () => {
                     type="button"
                     onClick={signInWithGoogle}
                     disabled={authLoading}
-                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-gray-950 hover:bg-sky-100 transition-colors disabled:opacity-60"
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gray-900 dark:bg-white px-6 py-3.5 text-sm font-bold text-white dark:text-gray-950 hover:opacity-90 transition-opacity disabled:opacity-60"
                   >
                     {authLoading ? 'Signing in…' : 'Initialize access'}
                     <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
                   </button>
                   <Link
                     href="/recruit"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-white/15 bg-white dark:bg-white/5 px-6 py-3.5 text-sm font-semibold text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
                   >
                     Join chapter
                   </Link>
@@ -308,8 +309,7 @@ const Hero: React.FC = () => {
               )}
             </div>
 
-            {/* Live stats strip */}
-            <div className="mt-auto grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+            <div className="mt-auto grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-200 dark:bg-white/10">
               {[
                 { k: '500+', v: 'members' },
                 { k: '50+', v: 'events / yr' },
@@ -317,34 +317,34 @@ const Hero: React.FC = () => {
               ].map(s => (
                 <div
                   key={s.v}
-                  className="bg-[#0a0b12] px-3 py-4 sm:px-5 sm:py-5 text-center hover:bg-[#0e1018] transition-colors"
+                  className="bg-white dark:bg-[#0a0b12] px-3 py-4 sm:px-5 sm:py-5 text-center hover:bg-zinc-50 dark:hover:bg-[#0e1018] transition-colors"
                 >
-                  <p className="font-display text-xl sm:text-2xl font-bold text-white tracking-tight">{s.k}</p>
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-white/35">{s.v}</p>
+                  <p className="font-display text-xl sm:text-2xl font-bold tracking-tight">{s.k}</p>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-gray-400 dark:text-white/35">
+                    {s.v}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right: media console */}
           <motion.div
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.55, delay: 0.1 }}
             className="lg:col-span-5 flex flex-col gap-3"
           >
-            <div className="relative flex-1 min-h-[280px] sm:min-h-[340px] rounded-3xl overflow-hidden border border-white/10 bg-[#0a0b12] shadow-2xl shadow-black/50">
-              {/* Window chrome */}
-              <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-4 py-2.5 bg-black/40 backdrop-blur-md border-b border-white/10">
+            <div className="relative flex-1 min-h-[280px] sm:min-h-[340px] rounded-3xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0a0b12] shadow-2xl shadow-black/10 dark:shadow-black/50">
+              <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-4 py-2.5 bg-white/80 dark:bg-black/40 backdrop-blur-md border-b border-gray-200 dark:border-white/10">
                 <div className="flex items-center gap-1.5">
                   <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
                   <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
                 </div>
-                <span className="font-mono text-[10px] text-white/45">
+                <span className="font-mono text-[10px] text-gray-500 dark:text-white/45">
                   module://{active.id}
                 </span>
-                <ArrowUpRight size={12} className="text-white/35" />
+                <ArrowUpRight size={12} className="text-gray-400 dark:text-white/35" />
               </div>
 
               <AnimatePresence mode="wait">
@@ -366,48 +366,50 @@ const Hero: React.FC = () => {
                   />
                 </motion.div>
               </AnimatePresence>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#05060a] via-[#05060a]/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent dark:from-[#05060a]" />
 
-              <div className="absolute bottom-0 inset-x-0 z-10 p-5 sm:p-6">
-                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-sky-300/80 mb-1">
+              <div className="absolute bottom-0 inset-x-0 z-10 p-5 sm:p-6 text-white">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-sky-300/90 mb-1">
                   {active.tag} · {active.label}
                 </p>
                 <p className="font-display text-xl sm:text-2xl font-bold leading-snug">{active.blurb}</p>
               </div>
             </div>
 
-            {/* Secondary console cards */}
             <div className="grid grid-cols-2 gap-3">
               <Link
                 href="/events"
-                className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 hover:border-sky-400/40 hover:bg-sky-500/10 transition-all"
+                className="group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.04] p-4 hover:border-sky-400/50 hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-all"
               >
-                <p className="font-mono text-[10px] text-white/35 mb-2">ROUTE</p>
-                <p className="text-sm font-semibold text-white group-hover:text-sky-200">/events</p>
-                <p className="text-[11px] text-white/40 mt-1">Browse calendar →</p>
+                <p className="font-mono text-[10px] text-gray-400 dark:text-white/35 mb-2">ROUTE</p>
+                <p className="text-sm font-semibold group-hover:text-sky-600 dark:group-hover:text-sky-200">
+                  /events
+                </p>
+                <p className="text-[11px] text-gray-400 dark:text-white/40 mt-1">Browse calendar →</p>
               </Link>
               <Link
                 href="/team"
-                className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 hover:border-violet-400/40 hover:bg-violet-500/10 transition-all"
+                className="group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.04] p-4 hover:border-violet-400/50 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-all"
               >
-                <p className="font-mono text-[10px] text-white/35 mb-2">ROUTE</p>
-                <p className="text-sm font-semibold text-white group-hover:text-violet-200">/team</p>
-                <p className="text-[11px] text-white/40 mt-1">Meet core →</p>
+                <p className="font-mono text-[10px] text-gray-400 dark:text-white/35 mb-2">ROUTE</p>
+                <p className="text-sm font-semibold group-hover:text-violet-600 dark:group-hover:text-violet-200">
+                  /team
+                </p>
+                <p className="text-[11px] text-gray-400 dark:text-white/40 mt-1">Meet core →</p>
               </Link>
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Marquee belt */}
-      <div className="relative border-t border-white/10 bg-black/40 py-3 overflow-hidden">
+      <div className="relative border-t border-gray-200 dark:border-white/10 bg-white/60 dark:bg-black/40 py-3 overflow-hidden">
         <div className="flex w-max animate-marquee whitespace-nowrap">
           {[...MARQUEE, ...MARQUEE].map((item, i) => (
             <span
               key={`${item}-${i}`}
-              className="mx-6 font-mono text-xs sm:text-sm tracking-[0.2em] text-white/35"
+              className="mx-6 font-mono text-xs sm:text-sm tracking-[0.2em] text-gray-400 dark:text-white/35"
             >
-              <span className="text-sky-500/70">◆</span> {item}
+              <span className="text-sky-500/80">◆</span> {item}
             </span>
           ))}
         </div>

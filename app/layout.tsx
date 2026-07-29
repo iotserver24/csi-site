@@ -11,6 +11,22 @@ export const metadata = {
   description: 'Computer Society of India, NMAMIT chapter.',
 }
 
+/** Runs before paint so light/dark matches localStorage and avoids flash */
+const themeInitScript = `
+(function(){
+  try {
+    var t = localStorage.getItem('theme');
+    if (t !== 'light' && t !== 'dark') {
+      t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    var r = document.documentElement;
+    if (t === 'dark') r.classList.add('dark');
+    else r.classList.remove('dark');
+    r.style.colorScheme = t;
+  } catch (e) {}
+})();
+`
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -21,8 +37,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap"
           rel="stylesheet"
         />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body>
+      <body className="bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
         <Providers>
           <div className="relative min-h-screen flex flex-col">
             <Navbar />

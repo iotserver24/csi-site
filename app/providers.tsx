@@ -2,14 +2,26 @@
 
 import type { ReactNode } from 'react'
 import { AuthProvider } from '../src/contexts/AuthContext'
-import { ThemeProvider } from '../src/contexts/ThemeContext'
+import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext'
 import { Toaster } from 'sonner'
+
+function ThemedToaster() {
+  const { isDark, mounted } = useTheme()
+  return (
+    <Toaster
+      position="bottom-right"
+      theme={mounted ? (isDark ? 'dark' : 'light') : 'system'}
+      richColors
+      closeButton
+    />
+  )
+}
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Toaster position="bottom-right" theme="dark" richColors closeButton />
+        <ThemedToaster />
         {children}
       </AuthProvider>
     </ThemeProvider>

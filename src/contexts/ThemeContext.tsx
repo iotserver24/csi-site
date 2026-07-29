@@ -1,52 +1,91 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+'use client'
+
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+
+type Theme = 'light' | 'dark'
 
 interface ThemeContextValue {
-  theme: string
+  theme: Theme
   toggleTheme: () => void
+  setTheme: (t: Theme) => void
   isDark: boolean
   mounted: boolean
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-export const useTheme = () => useContext(ThemeContext) as ThemeContextValue
+export const useTheme = () => {
+  const ctx = useContext(ThemeContext)
+  if (!ctx) {
+    // Safe fallback so navbar never crashes if provider is missing
+    return {
+      theme: 'light' as Theme,
+      toggleTheme: () => {},
+      setTheme: () => {},
+      isDark: false,
+      mounted: false,
+    }
+  }
+  return ctx
+}
+
+function applyThemeClass(theme: Theme) {
+  const root = document.documentElement
+  root.classList.toggle('dark', theme === 'dark')
+  root.style.colorScheme = theme
+  try {
+    localStorage.setItem('theme', theme)
+  } catch {
+    /* ignore */
+  }
+}
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState<string>('light')
-  const [mounted, setMounted] = useState<boolean>(false)
+  const [theme, setThemeState] = useState<Theme>('light')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem('theme')
-    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    setTheme(saved || sys)
+    let initial: Theme = 'light'
+    try {
+      const saved = localStorage.getItem('theme')
+      if (saved === 'dark' || saved === 'light') initial = saved
+      else if (window.matchMedia('(prefers-color-scheme: dark)').matches) initial = 'dark'
+    } catch {
+      /* ignore */
+    }
+    setThemeState(initial)
+    applyThemeClass(initial)
     setMounted(true)
   }, [])
 
   useEffect(() => {
     if (!mounted) return
-    const root = document.documentElement
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-    localStorage.setItem('theme', theme)
+    applyThemeClass(theme)
   }, [theme, mounted])
 
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light')
-  }
+  const setTheme = useCallback((t: Theme) => {
+    setThemeState(t)
+    applyThemeClass(t)
+  }, [])
 
-  const value: ThemeContextValue = {
-    theme,
-    toggleTheme,
-    isDark: theme === 'dark',
-    mounted,
-  }
+  const toggleTheme = useCallback(() => {
+    setThemeState(prev => {
+      const next: Theme = prev === 'dark' ? 'light' : 'dark'
+      applyThemeClass(next)
+      return next
+    })
+  }, [])
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+  const value = useMemo(
+    () => ({
+      theme,
+      toggleTheme,
+      setTheme,
+      isDark: theme === 'dark',
+      mounted,
+    }),
+    [theme, toggleTheme, setTheme, mounted]
   )
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
