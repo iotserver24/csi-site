@@ -65,7 +65,7 @@ const Highlights: React.FC = () => {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={inView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.4, delay: index * 0.03 }}
-              className={`relative overflow-hidden rounded-2xl group text-left
+              className={`relative overflow-hidden rounded-2xl group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950
                 ${index === 0 ? 'md:col-span-2' : ''}`}
               onClick={() => open(index)}
             >

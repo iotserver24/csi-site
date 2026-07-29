@@ -1,4 +1,5 @@
 import Hero from '../components/Home/Hero'
+import UpcomingEvents from '../components/Home/UpcomingEvents'
 import About from '../components/Home/About'
 import Features from '../components/Home/Features'
 import Highlights from '../components/Home/Highlights'
@@ -9,6 +10,7 @@ const Home = () => {
   return (
     <div className="overflow-x-hidden">
       <Hero />
+      <UpcomingEvents />
       <Features />
       <About />
       <Highlights />
