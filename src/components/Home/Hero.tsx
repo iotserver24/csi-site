@@ -1,10 +1,19 @@
 'use client'
 
-import { useRef, useEffect, useState, useCallback, type KeyboardEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Code2, Mic2, Sparkles, Trophy, Users } from 'lucide-react'
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Code2,
+  Command,
+  Mic2,
+  Terminal,
+  Trophy,
+  Users,
+} from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { usePointerGlow } from './usePointerGlow'
 
@@ -13,169 +22,87 @@ const FOCI = [
     id: 'workshops',
     label: 'Workshops',
     icon: Code2,
-    line: 'Hands-on sessions that leave you with skills you can ship.',
+    tag: '01',
+    line: 'Hands-on labs that leave real skills — not just attendance certificates.',
     image: '/hero.jpg',
-    caption: 'Learn by doing',
-    blurb: 'Web, cloud, AI, security — tools you’ll actually use.',
+    blurb: 'Web · Cloud · AI · Security',
   },
   {
     id: 'hackathons',
     label: 'Hackathons',
     icon: Trophy,
-    line: 'Timed builds, teammates, demos. Pressure that teaches.',
+    tag: '02',
+    line: 'Build under pressure. Ship demos. Find teammates who actually commit.',
     image: '/highlights/event (2).jpg',
-    caption: 'Ship under pressure',
-    blurb: 'Ideas leave the slide deck and hit a demo stage.',
+    blurb: '48h builds · team codes · demos',
   },
   {
     id: 'talks',
     label: 'Talks',
     icon: Mic2,
-    line: 'Alumni and industry voices on careers and craft.',
+    tag: '03',
+    line: 'Alumni and industry builders on careers, product, and craft.',
     image: '/highlights/event (5).jpg',
-    caption: 'Hear from builders',
-    blurb: 'Real paths, real products, real engineering judgment.',
+    blurb: 'Panels · AMA · industry',
   },
   {
     id: 'community',
     label: 'Community',
     icon: Users,
-    line: 'Seniors, juniors, and peers who show up for each other.',
+    tag: '04',
+    line: 'Seniors, juniors, core team — a network that shows up for each other.',
     image: '/team.jpg',
-    caption: 'Find your people',
-    blurb: 'Mentorship and collaborators for the next project.',
+    blurb: 'Mentors · peers · alumni',
   },
 ] as const
 
 type FocusId = (typeof FOCI)[number]['id']
 
-const CountUp = ({ end, suffix = '', duration = 1000 }: { end: number; suffix?: string; duration?: number }) => {
-  const [count, setCount] = useState(0)
-  const ref = useRef<HTMLSpanElement>(null)
-  const [inView, setInView] = useState(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true)
-          obs.disconnect()
-        }
-      },
-      { threshold: 0.3 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
-
-  useEffect(() => {
-    if (!inView) return
-    let start = 0
-    const step = Math.max(1, Math.ceil(end / (duration / 16)))
-    const timer = setInterval(() => {
-      start += step
-      if (start >= end) {
-        setCount(end)
-        clearInterval(timer)
-      } else setCount(start)
-    }, 16)
-    return () => clearInterval(timer)
-  }, [inView, end, duration])
-
-  return (
-    <span ref={ref} className="font-display">
-      {count}
-      {suffix}
-    </span>
-  )
-}
-
-const MagneticPrimary = ({
-  children,
-  className,
-  onClick,
-  disabled,
-  as: As = 'button',
-  href,
-}: {
-  children: React.ReactNode
-  className?: string
-  onClick?: () => void
-  disabled?: boolean
-  as?: 'button' | 'a'
-  href?: string
-}) => {
-  const ref = useRef<HTMLElement | null>(null)
-  const [offset, setOffset] = useState({ x: 0, y: 0 })
-  const [enabled, setEnabled] = useState(false)
-
-  useEffect(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const fine = window.matchMedia('(pointer: fine)')
-    const sync = () => setEnabled(!reduce.matches && fine.matches)
-    sync()
-    reduce.addEventListener('change', sync)
-    fine.addEventListener('change', sync)
-    return () => {
-      reduce.removeEventListener('change', sync)
-      fine.removeEventListener('change', sync)
-    }
-  }, [])
-
-  const onMove = (e: React.PointerEvent) => {
-    if (!enabled || !ref.current) return
-    const r = ref.current.getBoundingClientRect()
-    const x = e.clientX - (r.left + r.width / 2)
-    const y = e.clientY - (r.top + r.height / 2)
-    setOffset({ x: Math.max(-8, Math.min(8, x * 0.18)), y: Math.max(-8, Math.min(8, y * 0.18)) })
-  }
-
-  const reset = () => setOffset({ x: 0, y: 0 })
-
-  const style = {
-    transform: `translate3d(${offset.x}px, ${offset.y}px, 0)`,
-    transition: enabled ? 'transform 0.12s ease-out' : undefined,
-  }
-
-  if (As === 'a' && href) {
-    return (
-      <Link
-        href={href}
-        ref={ref as React.RefObject<HTMLAnchorElement>}
-        className={className}
-        style={style}
-        onPointerMove={onMove}
-        onPointerLeave={reset}
-      >
-        {children}
-      </Link>
-    )
-  }
-
-  return (
-    <button
-      type="button"
-      ref={ref as React.RefObject<HTMLButtonElement>}
-      className={className}
-      style={style}
-      onClick={onClick}
-      disabled={disabled}
-      onPointerMove={onMove}
-      onPointerLeave={reset}
-    >
-      {children}
-    </button>
-  )
-}
+const MARQUEE = [
+  'WORKSHOPS',
+  'HACKATHONS',
+  'AI / ML',
+  'WEB DEV',
+  'CLOUD',
+  'OPEN SOURCE',
+  'SECURITY',
+  'SYSTEM DESIGN',
+  'DEVOPS',
+  'COMPETITIVE CODE',
+  'PRODUCT',
+  'RESEARCH',
+]
 
 const Hero: React.FC = () => {
   const { user, signInWithGoogle, authLoading } = useAuth()
   const [focus, setFocus] = useState<FocusId>('workshops')
+  const [tick, setTick] = useState(0)
   const { hostRef, onPointerMove, glowStyle } = usePointerGlow(true)
   const active = FOCI.find(f => f.id === focus) ?? FOCI[0]
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => (t + 1) % 1000), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  // Auto-rotate focus gently when idle (paused on interaction)
+  const idleRef = useRef(true)
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!idleRef.current) return
+      setFocus(prev => {
+        const i = FOCI.findIndex(f => f.id === prev)
+        return FOCI[(i + 1) % FOCI.length].id
+      })
+    }, 4500)
+    return () => clearInterval(id)
+  }, [])
+
+  const selectFocus = (id: FocusId) => {
+    idleRef.current = false
+    setFocus(id)
+  }
 
   const onChipKey = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
@@ -183,12 +110,12 @@ const Hero: React.FC = () => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
         const next = (idx + 1) % FOCI.length
-        setFocus(FOCI[next].id)
+        selectFocus(FOCI[next].id)
         chipRefs.current[next]?.focus()
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault()
         const prev = (idx - 1 + FOCI.length) % FOCI.length
-        setFocus(FOCI[prev].id)
+        selectFocus(FOCI[prev].id)
         chipRefs.current[prev]?.focus()
       }
     },
@@ -199,61 +126,118 @@ const Hero: React.FC = () => {
     <section
       ref={hostRef as React.RefObject<HTMLElement>}
       onPointerMove={onPointerMove}
-      className="relative min-h-[90vh] flex items-center pt-28 pb-16 overflow-hidden"
+      className="relative overflow-hidden bg-[#05060a] text-white pt-24 pb-0"
     >
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950" />
+      {/* Layered tech background */}
+      <div className="absolute inset-0 pointer-events-none">
         <div
-          className="absolute inset-0 opacity-50 dark:opacity-30 pointer-events-none transition-[background] duration-150"
+          className="absolute inset-0 opacity-70"
+          style={{
+            background:
+              'radial-gradient(ellipse 80% 60% at 15% 20%, rgba(37,99,235,0.35) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 85% 70%, rgba(168,85,247,0.22) 0%, transparent 50%), radial-gradient(ellipse 40% 30% at 50% 100%, rgba(14,165,233,0.15) 0%, transparent 40%)',
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-40 transition-[background] duration-200"
           style={glowStyle}
         />
         <div
-          className="absolute inset-0 opacity-40 dark:opacity-20"
+          className="absolute inset-0 opacity-[0.12]"
           style={{
             backgroundImage:
-              'radial-gradient(circle at 20% 20%, rgba(59,130,246,0.16) 0%, transparent 42%), radial-gradient(circle at 80% 30%, rgba(168,85,247,0.12) 0%, transparent 40%)',
+              'linear-gradient(rgba(148,163,184,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.35) 1px, transparent 1px)',
+            backgroundSize: '64px 64px',
+            maskImage: 'radial-gradient(ellipse 70% 70% at 50% 40%, black 20%, transparent 75%)',
           }}
         />
-        <div
-          className="absolute inset-0 opacity-[0.035] dark:opacity-[0.05]"
-          style={{
-            backgroundImage: 'radial-gradient(circle, rgba(100,116,139,0.9) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-          }}
-        />
+        {/* Giant watermark */}
+        <div className="absolute -right-8 top-24 select-none font-display text-[clamp(6rem,22vw,14rem)] font-extrabold leading-none tracking-tighter text-white/[0.03]">
+          CSI
+        </div>
       </div>
 
-      <div className="container-custom relative z-10">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
-          <div className="lg:col-span-7 text-center lg:text-left">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45 }}
-              className="inline-flex flex-wrap items-center justify-center lg:justify-start gap-2 mb-5"
-            >
-              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm">
-                <Sparkles size={13} className="text-primary-500" />
-                <span className="text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-300">
-                  CSI NMAMIT · Command center
-                </span>
-              </span>
-              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/50">
-                <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 tracking-wide uppercase">
-                  Membership open
-                </span>
-              </span>
-            </motion.div>
+      <div className="container-custom relative z-10 pb-10 sm:pb-14">
+        {/* Status bar */}
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2.5 font-mono text-[11px] text-white/55 backdrop-blur-md"
+        >
+          <div className="flex items-center gap-3">
+            <Terminal size={13} className="text-emerald-400" />
+            <span className="text-emerald-400/90">system.online</span>
+            <span className="text-white/20">//</span>
+            <span>csi-nmamit · chapter runtime</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:inline text-white/40">
+              uptime {String(tick).padStart(3, '0')}s
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-soft" />
+              membership open 26–27
+            </span>
+            <span className="hidden md:inline-flex items-center gap-1 text-white/40">
+              <Command size={11} />K palette
+            </span>
+          </div>
+        </motion.div>
 
-            {/* Focus chips */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-stretch">
+          {/* Left: copy + modules */}
+          <div className="lg:col-span-7 flex flex-col">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="font-mono text-[11px] uppercase tracking-[0.22em] text-sky-400/90 mb-4"
+            >
+              Computer Society of India · NMAMIT
+            </motion.p>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.04 }}
+              transition={{ duration: 0.5 }}
+              className="font-display text-[clamp(2.75rem,7vw,4.75rem)] font-extrabold leading-[0.95] tracking-tight mb-6"
+            >
+              {user ? (
+                <>
+                  <span className="text-white/40">// welcome</span>
+                  <br />
+                  {user.name?.split(' ')[0] || 'member'}
+                  <span className="text-sky-400">_</span>
+                </>
+              ) : (
+                <>
+                  Build.
+                  <br />
+                  <span className="bg-gradient-to-r from-sky-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">
+                    Ship.
+                  </span>
+                  <br />
+                  Belong.
+                </>
+              )}
+            </motion.h1>
+
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={active.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                className="text-base sm:text-lg text-white/55 max-w-lg mb-7 leading-relaxed"
+              >
+                {active.line}
+              </motion.p>
+            </AnimatePresence>
+
+            {/* Module selector — looks like a control panel */}
+            <div
               role="tablist"
-              aria-label="Explore what CSI runs"
+              aria-label="CSI focus modules"
               onKeyDown={onChipKey}
-              className="flex flex-wrap justify-center lg:justify-start gap-2 mb-6"
+              className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-8"
             >
               {FOCI.map((f, i) => {
                 const Icon = f.icon
@@ -267,142 +251,114 @@ const Hero: React.FC = () => {
                     ref={el => {
                       chipRefs.current[i] = el
                     }}
-                    onClick={() => setFocus(f.id)}
-                    className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950 ${
+                    onClick={() => selectFocus(f.id)}
+                    className={`relative overflow-hidden rounded-xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
                       selected
-                        ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-md'
-                        : 'bg-white/80 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-300 hover:border-primary-400/50 hover:text-gray-900 dark:hover:text-white'
+                        ? 'border-sky-400/50 bg-sky-500/15 shadow-[0_0_24px_-6px_rgba(56,189,248,0.5)]'
+                        : 'border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]'
                     }`}
                   >
-                    <Icon size={14} />
-                    {f.label}
+                    <div className="flex items-center justify-between mb-2">
+                      <Icon size={16} className={selected ? 'text-sky-300' : 'text-white/45'} />
+                      <span className="font-mono text-[10px] text-white/30">{f.tag}</span>
+                    </div>
+                    <p className={`text-xs font-semibold ${selected ? 'text-white' : 'text-white/65'}`}>
+                      {f.label}
+                    </p>
                   </button>
                 )
               })}
-            </motion.div>
+            </div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.05 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08] text-gray-900 dark:text-white mb-4"
-            >
+            <div className="flex flex-col sm:flex-row gap-3 mb-10">
               {user ? (
                 <>
-                  Welcome back,{' '}
-                  <span className="gradient-text">{user.name?.split(' ')[0] || 'member'}</span>
-                </>
-              ) : (
-                <>
-                  Build skills.
-                  <br />
-                  Ship projects.
-                  <br />
-                  <span className="gradient-text">Grow with CSI.</span>
-                </>
-              )}
-            </motion.h1>
-
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={active.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.22 }}
-                className="text-base sm:text-lg text-gray-500 dark:text-gray-400 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed"
-              >
-                {active.line}
-              </motion.p>
-            </AnimatePresence>
-
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
-              className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start"
-            >
-              {user ? (
-                <>
-                  <MagneticPrimary
-                    as="a"
+                  <Link
                     href="/events"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold hover:opacity-90"
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-gray-950 hover:bg-sky-100 transition-colors"
                   >
-                    Explore events
-                    <ArrowRight size={18} />
-                  </MagneticPrimary>
+                    Open events
+                    <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
+                  </Link>
                   <Link
                     href="/profile"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
                   >
-                    My profile
+                    Dashboard
                   </Link>
                 </>
               ) : (
                 <>
-                  <MagneticPrimary
+                  <button
+                    type="button"
                     onClick={signInWithGoogle}
                     disabled={authLoading}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold hover:opacity-90 disabled:opacity-60"
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-gray-950 hover:bg-sky-100 transition-colors disabled:opacity-60"
                   >
-                    {authLoading ? 'Signing in…' : 'Get started'}
-                    <ArrowRight size={18} />
-                  </MagneticPrimary>
+                    {authLoading ? 'Signing in…' : 'Initialize access'}
+                    <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
+                  </button>
                   <Link
                     href="/recruit"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
                   >
-                    Join CSI
+                    Join chapter
                   </Link>
                 </>
               )}
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.28 }}
-              className="mt-10 grid grid-cols-3 gap-3 max-w-md mx-auto lg:mx-0"
-            >
+            {/* Live stats strip */}
+            <div className="mt-auto grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10">
               {[
-                { end: 500, suffix: '+', label: 'Members' },
-                { end: 50, suffix: '+', label: 'Events / yr' },
-                { end: 10, suffix: '+', label: 'Years' },
+                { k: '500+', v: 'members' },
+                { k: '50+', v: 'events / yr' },
+                { k: '10+', v: 'years live' },
               ].map(s => (
                 <div
-                  key={s.label}
-                  className="rounded-2xl border border-gray-200/80 dark:border-gray-800 bg-white/70 dark:bg-gray-900/50 backdrop-blur px-3 py-4 text-center transition-colors hover:border-primary-400/40 dark:hover:border-primary-500/30"
+                  key={s.v}
+                  className="bg-[#0a0b12] px-3 py-4 sm:px-5 sm:py-5 text-center hover:bg-[#0e1018] transition-colors"
                 >
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                    <CountUp end={s.end} suffix={s.suffix} />
-                  </p>
-                  <p className="text-[10px] sm:text-[11px] text-gray-500 tracking-wider uppercase mt-1">{s.label}</p>
+                  <p className="font-display text-xl sm:text-2xl font-bold text-white tracking-tight">{s.k}</p>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-white/35">{s.v}</p>
                 </div>
               ))}
-            </motion.div>
+            </div>
           </div>
 
-          {/* Interactive visual */}
+          {/* Right: media console */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.55, delay: 0.12 }}
-            className="lg:col-span-5 relative"
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.55, delay: 0.1 }}
+            className="lg:col-span-5 flex flex-col gap-3"
           >
-            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-2xl shadow-black/10 dark:shadow-black/40 group">
+            <div className="relative flex-1 min-h-[280px] sm:min-h-[340px] rounded-3xl overflow-hidden border border-white/10 bg-[#0a0b12] shadow-2xl shadow-black/50">
+              {/* Window chrome */}
+              <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-4 py-2.5 bg-black/40 backdrop-blur-md border-b border-white/10">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
+                </div>
+                <span className="font-mono text-[10px] text-white/45">
+                  module://{active.id}
+                </span>
+                <ArrowUpRight size={12} className="text-white/35" />
+              </div>
+
               <AnimatePresence mode="wait">
                 <motion.div
                   key={active.image}
-                  initial={{ opacity: 0, scale: 1.03 }}
+                  initial={{ opacity: 0, scale: 1.04 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.99 }}
-                  transition={{ duration: 0.35 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.4 }}
                   className="absolute inset-0"
                 >
                   <Image
                     src={active.image}
-                    alt={active.caption}
+                    alt={active.label}
                     fill
                     priority={active.id === 'workshops'}
                     sizes="(max-width: 1024px) 100vw, 40vw"
@@ -410,29 +366,50 @@ const Hero: React.FC = () => {
                   />
                 </motion.div>
               </AnimatePresence>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 text-white">
-                <p className="text-[11px] uppercase tracking-[0.16em] text-white/70 mb-1">{active.caption}</p>
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={active.blurb}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="text-lg sm:text-xl font-semibold leading-snug"
-                  >
-                    {active.blurb}
-                  </motion.p>
-                </AnimatePresence>
-              </div>
-              {/* Focus pill on image */}
-              <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 px-3 py-1.5">
-                <active.icon size={13} className="text-sky-300" />
-                <span className="text-[11px] font-semibold text-white/90">{active.label}</span>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#05060a] via-[#05060a]/30 to-transparent" />
+
+              <div className="absolute bottom-0 inset-x-0 z-10 p-5 sm:p-6">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-sky-300/80 mb-1">
+                  {active.tag} · {active.label}
+                </p>
+                <p className="font-display text-xl sm:text-2xl font-bold leading-snug">{active.blurb}</p>
               </div>
             </div>
-            <div className="absolute -z-10 -inset-4 rounded-[2rem] bg-gradient-to-br from-primary-500/20 via-transparent to-cyber-purple/20 blur-2xl" />
+
+            {/* Secondary console cards */}
+            <div className="grid grid-cols-2 gap-3">
+              <Link
+                href="/events"
+                className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 hover:border-sky-400/40 hover:bg-sky-500/10 transition-all"
+              >
+                <p className="font-mono text-[10px] text-white/35 mb-2">ROUTE</p>
+                <p className="text-sm font-semibold text-white group-hover:text-sky-200">/events</p>
+                <p className="text-[11px] text-white/40 mt-1">Browse calendar →</p>
+              </Link>
+              <Link
+                href="/team"
+                className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 hover:border-violet-400/40 hover:bg-violet-500/10 transition-all"
+              >
+                <p className="font-mono text-[10px] text-white/35 mb-2">ROUTE</p>
+                <p className="text-sm font-semibold text-white group-hover:text-violet-200">/team</p>
+                <p className="text-[11px] text-white/40 mt-1">Meet core →</p>
+              </Link>
+            </div>
           </motion.div>
+        </div>
+      </div>
+
+      {/* Marquee belt */}
+      <div className="relative border-t border-white/10 bg-black/40 py-3 overflow-hidden">
+        <div className="flex w-max animate-marquee whitespace-nowrap">
+          {[...MARQUEE, ...MARQUEE].map((item, i) => (
+            <span
+              key={`${item}-${i}`}
+              className="mx-6 font-mono text-xs sm:text-sm tracking-[0.2em] text-white/35"
+            >
+              <span className="text-sky-500/70">◆</span> {item}
+            </span>
+          ))}
         </div>
       </div>
     </section>

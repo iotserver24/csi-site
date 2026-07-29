@@ -35,12 +35,11 @@ function pickUpcoming(events: Event[]): Event[] {
 }
 
 const Skeleton = () => (
-  <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden animate-pulse">
-    <div className="aspect-[16/10] bg-gray-100 dark:bg-gray-900" />
+  <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden animate-pulse">
+    <div className="aspect-[16/10] bg-white/5" />
     <div className="p-5 space-y-3">
-      <div className="h-3 w-16 rounded bg-gray-100 dark:bg-gray-800" />
-      <div className="h-4 w-3/4 rounded bg-gray-100 dark:bg-gray-800" />
-      <div className="h-3 w-1/2 rounded bg-gray-100 dark:bg-gray-800" />
+      <div className="h-3 w-16 rounded bg-white/10" />
+      <div className="h-4 w-3/4 rounded bg-white/10" />
     </div>
   </div>
 )
@@ -71,63 +70,52 @@ const UpcomingEvents: React.FC = () => {
   }, [])
 
   return (
-    <section className="py-16 sm:py-20 relative" ref={ref}>
+    <section className="relative py-16 sm:py-24 bg-[#05060a] text-white border-t border-white/5" ref={ref}>
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.45 }}
           className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10"
         >
           <div>
-            <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-primary-500 mb-3">
-              Live calendar
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-emerald-400/90 mb-3">
+              // live feed
             </p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">
               What’s next
             </h2>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md">
-              Upcoming chapter events — register, team up, show up.
-            </p>
           </div>
           <Link
             href="/events"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 dark:text-primary-400 hover:gap-3 transition-all self-start sm:self-auto"
+            className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-white/50 hover:text-sky-300 transition-colors"
           >
-            View all events
-            <ArrowRight size={16} />
+            view_all <ArrowRight size={14} />
           </Link>
         </motion.div>
 
         {loading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Skeleton />
             <Skeleton />
             <Skeleton />
           </div>
         ) : items.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            className="rounded-3xl border border-dashed border-gray-200 dark:border-gray-800 bg-zinc-50/80 dark:bg-zinc-900/30 px-6 py-14 text-center"
-          >
-            <Sparkles className="mx-auto mb-3 text-primary-500" size={22} />
-            <p className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-              Season calendar is filling up
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-              Browse workshops and past years while new 2026–27 events land.
+          <div className="rounded-3xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-14 text-center">
+            <Sparkles className="mx-auto mb-3 text-sky-400" size={22} />
+            <p className="font-display text-xl font-bold mb-2">Queue is warming up</p>
+            <p className="text-sm text-white/45 mb-6 max-w-md mx-auto">
+              New 2026–27 events land here. Browse the full archive while the season loads.
             </p>
             <Link
               href="/events"
-              className="inline-flex items-center gap-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-5 py-2.5 text-sm font-semibold"
+              className="inline-flex items-center gap-2 rounded-xl bg-white text-gray-950 px-5 py-2.5 text-sm font-bold"
             >
-              Browse events
+              Open events
               <ArrowRight size={16} />
             </Link>
-          </motion.div>
+          </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {items.map((event, index) => (
               <motion.div
                 key={event.id}
@@ -137,9 +125,9 @@ const UpcomingEvents: React.FC = () => {
               >
                 <Link
                   href="/events"
-                  className="group flex flex-col h-full rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 hover:border-primary-400/40 dark:hover:border-primary-500/30 hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] hover:border-sky-400/40 hover:bg-sky-500/5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
                 >
-                  <div className="relative aspect-[16/10] bg-gray-100 dark:bg-gray-900 overflow-hidden">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-white/5">
                     {event.image ? (
                       <Image
                         src={event.image}
@@ -147,26 +135,26 @@ const UpcomingEvents: React.FC = () => {
                         fill
                         unoptimized
                         sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.05]"
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Image src="/csi-logo.png" alt="" width={40} height={40} className="opacity-30" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#05060a] via-transparent to-transparent" />
                     {event.type && (
-                      <span className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-black/50 text-white backdrop-blur-sm">
+                      <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-wider px-2 py-1 rounded-md bg-black/60 text-sky-200 border border-white/10">
                         {event.type}
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-col flex-1 p-5">
-                    <h3 className="text-base font-semibold text-gray-900 dark:text-white line-clamp-2 mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                  <div className="flex flex-1 flex-col p-5">
+                    <h3 className="font-semibold text-white line-clamp-2 mb-3 group-hover:text-sky-200 transition-colors">
                       {event.title}
                     </h3>
-                    <p className="mt-auto flex items-center gap-1.5 text-xs text-gray-500">
-                      <Calendar size={13} />
+                    <p className="mt-auto flex items-center gap-1.5 font-mono text-[11px] text-white/40">
+                      <Calendar size={12} />
                       {event.date ? formatEventDate(String(event.date)) : event.year || 'TBA'}
                     </p>
                   </div>
