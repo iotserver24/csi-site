@@ -62,6 +62,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         github: profile.github,
         linkedin: profile.linkedin,
         membershipStatus: profile.membershipStatus,
+        membershipType: profile.membershipType,
+        membershipExpiresAt: profile.membershipExpiresAt,
         certificates: profile.certificates || [],
         createdAt: profile.createdAt,
       },

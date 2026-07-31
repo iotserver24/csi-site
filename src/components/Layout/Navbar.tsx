@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
+import { isMembershipActive } from '../../data/membershipData'
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -25,6 +26,7 @@ const Navbar: React.FC = () => {
   const { user, signInWithGoogle, logout, authLoading, getUserRoleDisplay, isUserCoreMember } = useAuth()
   const { theme, toggleTheme, mounted } = useTheme()
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const alreadyMember = isMembershipActive(user?.membership)
 
   useEffect(() => {
     let ticking = false
@@ -108,17 +110,19 @@ const Navbar: React.FC = () => {
                 </Link>
               ))}
 
-              {/* Join CTA */}
-              <Link
-                href="/recruit"
-                className="ml-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold
-                           bg-gray-900 dark:bg-white text-white dark:text-gray-900
-                           hover:bg-gray-700 dark:hover:bg-gray-100
-                           transition-colors duration-200"
-              >
-                <Sparkles size={13} />
-                Join CSI
-              </Link>
+              {/* Join CTA — hidden when already a member */}
+              {!alreadyMember && (
+                <Link
+                  href="/recruit"
+                  className="ml-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold
+                             bg-gray-900 dark:bg-white text-white dark:text-gray-900
+                             hover:bg-gray-700 dark:hover:bg-gray-100
+                             transition-colors duration-200"
+                >
+                  <Sparkles size={13} />
+                  Join CSI
+                </Link>
+              )}
             </div>
 
             {/* Desktop right actions */}
@@ -318,13 +322,15 @@ const Navbar: React.FC = () => {
                 ))}
               </div>
 
-              {/* Join */}
-              <Link href="/recruit" onClick={() => setIsOpen(false)}
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-[14px] font-semibold
-                           bg-gray-900 dark:bg-white text-white dark:text-gray-900
-                           hover:bg-gray-700 dark:hover:bg-gray-100 transition-colors">
-                <Sparkles size={14} /> Join CSI
-              </Link>
+              {/* Join — hidden when already a member */}
+              {!alreadyMember && (
+                <Link href="/recruit" onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-[14px] font-semibold
+                             bg-gray-900 dark:bg-white text-white dark:text-gray-900
+                             hover:bg-gray-700 dark:hover:bg-gray-100 transition-colors">
+                  <Sparkles size={14} /> Join CSI
+                </Link>
+              )}
 
               {/* User profile / signout */}
               {user ? (

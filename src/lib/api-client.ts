@@ -7,8 +7,14 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
   const response = await fetch(path, { ...options, headers })
-  const body = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(body.error || 'Request failed')
+  const body = await response.json().catch(() => ({})) as Record<string, unknown>
+  if (!response.ok) {
+    const errMsg = typeof body.error === 'string' ? body.error : 'Request failed'
+    const detail = body.detail && typeof body.detail === 'object'
+      ? ` (${JSON.stringify(body.detail)})`
+      : ''
+    throw new Error(`${errMsg}${detail}`)
+  }
   return body
 }
 

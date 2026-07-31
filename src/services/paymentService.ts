@@ -14,6 +14,8 @@ interface RazorpayResponse {
   razorpay_payment_id?: string
   razorpay_order_id?: string
   razorpay_invoice_id?: string
+  razorpay_invoice_status?: string
+  razorpay_invoice_receipt?: string | null
   razorpay_signature?: string
   [key: string]: unknown
 }
@@ -75,18 +77,21 @@ class PaymentService {
         },
         handler: async (response: RazorpayResponse) => {
           try {
-            // Invoice checkout often omits razorpay_order_id — always fall back to create-order ids
+            // Invoice checkout often omits order_id / uses invoice_* fields — send everything we have
             const verifyPayload: Record<string, unknown> = {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id || createdOrderId,
               razorpay_signature: response.razorpay_signature,
               razorpay_invoice_id: response.razorpay_invoice_id || createdInvoiceId,
+              razorpay_invoice_status: response.razorpay_invoice_status,
+              razorpay_invoice_receipt: response.razorpay_invoice_receipt ?? null,
             }
-            if (!verifyPayload.razorpay_payment_id || !verifyPayload.razorpay_signature) {
-              throw new Error('Payment completed but Razorpay did not return verification fields')
+            if (!verifyPayload.razorpay_payment_id) {
+              throw new Error('Payment completed but Razorpay did not return a payment id')
             }
+            // Signature is preferred but not required — server also verifies via Razorpay API
             const result = await api.post('/api/payments/verify', verifyPayload)
-            if (!result.verified) throw new Error('Payment verification failed')
+            if (!result.verified) throw new Error((result.error as string) || 'Payment verification failed')
             onSuccess(result)
           } catch (err) {
             onFailure((err as Error).message || 'Payment verification failed')

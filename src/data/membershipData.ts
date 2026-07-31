@@ -66,6 +66,23 @@ export function getPlanById(planId: string): MembershipPlan | undefined {
   return membershipPlans.find((p) => p.id === planId)
 }
 
+/** Short human label for plan id (e.g. one-year → "1 Year") */
+export function getPlanDisplayLabel(planId: string | null | undefined): string {
+  if (!planId) return 'CSI Member'
+  const plan = getPlanById(planId)
+  if (plan) return plan.duration
+  return planId.replace(/-/g, ' ')
+}
+
+export function isMembershipActive(membership?: {
+  status?: string | null
+  expiresAt?: Date | string | null
+} | null): boolean {
+  if (!membership || membership.status !== 'active') return false
+  if (!membership.expiresAt) return true
+  return new Date(membership.expiresAt) > new Date()
+}
+
 /** Total charged to member (membership + transaction fee), in rupees */
 export function getPlanTotal(plan: Pick<MembershipPlan, 'basePrice' | 'platformFee'>): number {
   return plan.basePrice + plan.platformFee

@@ -1,6 +1,8 @@
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { Award } from 'lucide-react'
 import { toast } from 'sonner'
+import { getPlanDisplayLabel, isMembershipActive } from '../../data/membershipData'
 import type { AppUser } from '../../types'
 
 interface MembershipDetailsProps {
@@ -11,12 +13,16 @@ interface MembershipDetailsProps {
 
 const MembershipDetails = ({ user, isEditing, onSave }: MembershipDetailsProps) => {
   const router = useRouter()
-  const membershipStatus = user?.membership?.status || 'inactive'
-  const membershipType = user?.membership?.type || 'None'
-  const membershipExpiry = user?.membership?.expiresAt instanceof Date ? user.membership.expiresAt : null
+  const active = isMembershipActive(user?.membership)
+  const membershipStatus = active ? 'active' : (user?.membership?.status || 'inactive')
+  const planLabel = getPlanDisplayLabel(user?.membership?.type)
+  const membershipExpiry = user?.membership?.expiresAt
+    ? new Date(user.membership.expiresAt)
+    : null
 
   const handleActivateClick = async (e: React.MouseEvent): Promise<void> => {
     e.preventDefault()
+    if (active) return
     if (isEditing) {
       toast.loading('Saving profile before redirecting...', { id: 'save-redirect' })
       const success = await onSave()
@@ -37,28 +43,38 @@ const MembershipDetails = ({ user, isEditing, onSave }: MembershipDetailsProps) 
       transition={{ delay: 0.2 }}
       className="glass-card rounded-xl p-6 mt-6"
     >
-      <h3 className="text-xl font-semibold mb-4">Membership Details</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-semibold">Membership Details</h3>
+        {active && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-yellow-400/15 text-yellow-600 dark:text-yellow-400 border border-yellow-400/40">
+            <Award size={12} />
+            CSI Member
+          </span>
+        )}
+      </div>
       <div className="space-y-4">
-        <div className="flex justify-between items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
+        <div className="flex flex-wrap justify-between gap-4 items-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
-            <p className="font-semibold capitalize">{membershipStatus}</p>
+            <p className={`font-semibold capitalize ${active ? 'text-emerald-600 dark:text-emerald-400' : ''}`}>
+              {membershipStatus}
+            </p>
           </div>
           <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Type</p>
-            <p className="font-semibold">{membershipType}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Plan</p>
+            <p className="font-semibold">{active ? planLabel : '—'}</p>
           </div>
-          {membershipExpiry && (
+          {membershipExpiry && active && (
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Expires</p>
               <p className="font-semibold">
-                {new Date(membershipExpiry).toLocaleDateString()}
+                {membershipExpiry.toLocaleDateString()}
               </p>
             </div>
           )}
         </div>
 
-        {membershipStatus === 'inactive' && (
+        {!active && (
           <button
             onClick={handleActivateClick}
             className="w-full btn-primary block text-center py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors"
