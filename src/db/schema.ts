@@ -20,6 +20,8 @@ export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   firebaseUid: text('firebase_uid').notNull().unique(),
   email: text('email').notNull().unique(),
+  /** Public share handle — /u/{username} */
+  username: text('username').unique(),
   name: text('name'),
   photoUrl: text('photo_url'),
   phone: text('phone'),

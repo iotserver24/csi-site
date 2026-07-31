@@ -17,4 +17,5 @@ const configured = Boolean(config.apiKey && config.authDomain && config.projectI
 const app = configured ? (getApps()[0] || initializeApp(config)) : null
 export const auth: Auth | null = app ? getAuth(app) : null
 export const googleProvider: GoogleAuthProvider | null = app ? new GoogleAuthProvider() : null
-googleProvider?.setCustomParameters({ prompt: 'select_account' })
+// Hint Google account picker toward college domain (not a hard lock — server still enforces)
+googleProvider?.setCustomParameters({ prompt: 'select_account', hd: 'nmamit.in' })

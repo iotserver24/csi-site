@@ -30,6 +30,7 @@ export interface AppUser extends DbUser {
 export interface ProfileData {
   name?: string
   email?: string
+  username?: string
   phone?: string
   college?: string
   branch?: string

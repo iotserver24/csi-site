@@ -24,15 +24,38 @@ function extractUsername(url: string, platform: 'github' | 'linkedin'): string {
 
 interface ProfileData {
   user: {
-    id: string; name: string; email: string; photoURL: string; bio: string; usn: string;
-    branch: string; year: string; college: string; github: string; linkedin: string;
-    membershipStatus: string; certificates: Array<{ title: string; date: string; issuer?: string; imageUrl?: string; eventName?: string }>;
-    createdAt: string;
+    id: string
+    username?: string
+    name: string
+    email?: string
+    photoURL: string
+    bio: string
+    usn: string
+    branch: string
+    year: string
+    college: string
+    github: string
+    linkedin: string
+    membershipStatus: string
+    certificates: Array<{
+      title: string
+      date: string
+      issuer?: string
+      imageUrl?: string
+      eventName?: string
+    }>
+    createdAt: string
   }
   role: string
   events: Array<{
-    id: string; title: string; date: string; type: string; category: string; image: string;
-    registrationStatus: string; teamName: string;
+    id: string
+    title: string
+    date: string
+    type: string
+    category: string
+    image: string
+    registrationStatus: string
+    teamName: string
   }>
 }
 
@@ -60,7 +83,9 @@ export default function SharedProfilePage() {
   }, [params.id])
 
   const copyLink = () => {
-    navigator.clipboard.writeText(window.location.href)
+    const handle = profile?.user?.username || params.id
+    const url = `${window.location.origin}/u/${handle}`
+    navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -115,6 +140,9 @@ export default function SharedProfilePage() {
               <h1 className="text-2xl font-bold">{user.name}</h1>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-400/15 text-yellow-400 capitalize">{role}</span>
             </div>
+            {user.username && (
+              <p className="font-mono text-sm text-sky-600 dark:text-sky-400 mb-1">@{user.username}</p>
+            )}
             {user.usn && <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">{user.usn}</p>}
             {user.branch && user.year && <p className="text-gray-500 text-sm">{user.branch} · Year {user.year}</p>}
             {user.college && <p className="text-gray-500 text-sm">{user.college}</p>}

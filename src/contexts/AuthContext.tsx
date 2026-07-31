@@ -13,6 +13,7 @@ import {
 import { auth, googleProvider } from '../lib/firebase-client'
 import { api } from '../lib/api-client'
 import { toast } from 'sonner'
+import { ALLOWED_EMAIL_MESSAGE, isAllowedCollegeEmail } from '../utils/allowedEmail'
 import type { AppUser, ProfileData, AuthContextValue } from '../types'
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -20,6 +21,20 @@ export const useAuth = () => useContext(AuthContext) as AuthContextValue
 
 const isComplete = (user: AppUser | null) => ['name', 'phone', 'branch', 'year', 'usn']
   .every(field => String(user?.[field as keyof AppUser] || user?.profile?.[field as keyof AppUser['profile']] || '').trim())
+
+/** Reject personal Gmail etc.; sign out Firebase session so they stay logged out. */
+let lastDomainRejectAt = 0
+async function rejectNonCollegeUser(firebaseUser: FirebaseUser): Promise<boolean> {
+  if (isAllowedCollegeEmail(firebaseUser.email)) return false
+  if (auth) await signOut(auth)
+  // Popup + onAuthStateChanged can both fire; only toast once per attempt
+  const now = Date.now()
+  if (now - lastDomainRejectAt > 2000) {
+    lastDomainRejectAt = now
+    toast.error(ALLOWED_EMAIL_MESSAGE)
+  }
+  return true
+}
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null)
@@ -29,6 +44,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const syncUser = async (firebaseUser: FirebaseUser | null): Promise<AppUser | null> => {
     if (!firebaseUser) {
+      setUser(null)
+      setIsProfileIncomplete(false)
+      return null
+    }
+    if (await rejectNonCollegeUser(firebaseUser)) {
       setUser(null)
       setIsProfileIncomplete(false)
       return null
@@ -54,9 +74,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await signInWithRedirect(auth, googleProvider)
         return null
       }
+      if (await rejectNonCollegeUser(result.user)) return null
       const appUser = await syncUser(result.user)
+      if (!appUser) return null
       toast.success(`Welcome${appUser?.name ? `, ${appUser.name}` : ''}!`)
       return result.user
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Sign in failed'
+      if (message.includes('@nmamit.in') || message.includes('college')) {
+        toast.error(ALLOWED_EMAIL_MESSAGE)
+      } else {
+        toast.error(message)
+      }
+      if (auth?.currentUser && !isAllowedCollegeEmail(auth.currentUser.email)) {
+        await signOut(auth)
+      }
+      return null
     } finally {
       setAuthLoading(false)
     }
@@ -77,7 +110,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (active) setLoading(false)
       }
     })
-    getRedirectResult(auth).catch(() => {})
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result?.user && active) {
+          if (await rejectNonCollegeUser(result.user)) {
+            setUser(null)
+            return
+          }
+        }
+      })
+      .catch(() => {})
     return () => { active = false; unsubscribe() }
   }, [])
 

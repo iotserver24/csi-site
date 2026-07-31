@@ -112,6 +112,36 @@ const ProfileForm = ({
             />
           </div>
 
+          {/* Public username / share handle */}
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <User size={16} />
+              Username
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">
+                @
+              </span>
+              <input
+                type="text"
+                name="username"
+                value={profileData.username || ''}
+                onChange={onInputChange}
+                disabled={!isEditing}
+                placeholder="yourname"
+                autoComplete="username"
+                maxLength={24}
+                className="input-field pl-8 font-mono text-sm"
+              />
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Defaults to your USN. Public link: /u/
+              {profileData.username ||
+                profileData.usn?.toLowerCase().replace(/[^a-z0-9_-]/g, '') ||
+                'your-usn'}
+            </p>
+          </div>
+
           {/* Phone */}
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

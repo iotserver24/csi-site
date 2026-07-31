@@ -12,6 +12,8 @@
     "db:migrate": "bunx drizzle-kit migrate",
     "db:studio": "bunx drizzle-kit studio",
     "migrate:firestore": "bun ./scripts/migrate-firestore.mjs",
+    "db:copy": "bun ./scripts/copy-postgres.mjs",
+    "db:usernames": "bun ./scripts/add-usernames.mjs",
     "seed:events": "bun ./scripts/seed-events-from-extract.mjs"
   },
   "dependencies": {

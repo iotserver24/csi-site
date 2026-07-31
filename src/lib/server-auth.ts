@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm'
 import { firebaseAdminAuth } from './firebase-admin'
 import { db } from '../db/index'
 import { roles, users } from '../db/schema'
+import { ALLOWED_EMAIL_MESSAGE, isAllowedCollegeEmail } from '../utils/allowedEmail'
 import type { DecodedIdToken } from 'firebase-admin/auth'
 import type { InferSelectModel } from 'drizzle-orm'
 
@@ -13,6 +14,9 @@ export async function requireUser(request: NextRequest) {
   const header = request.headers.get('authorization') || ''
   if (!header.startsWith('Bearer ')) throw new AuthError('Missing authorization token', 401)
   const decoded: DecodedIdToken = await firebaseAdminAuth.verifyIdToken(header.slice(7))
+  if (!isAllowedCollegeEmail(decoded.email)) {
+    throw new AuthError(ALLOWED_EMAIL_MESSAGE, 403)
+  }
   const [user] = await db.select().from(users).where(eq(users.firebaseUid, decoded.uid)).limit(1)
   if (!user) throw new AuthError('User profile not found', 404)
   const userRoles = await db.select().from(roles).where(eq(roles.userId, user.id))

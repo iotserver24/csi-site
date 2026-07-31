@@ -3,7 +3,9 @@ import { eq } from 'drizzle-orm'
 import { firebaseAdminAuth } from '../../../../src/lib/firebase-admin'
 import { db } from '../../../../src/db/index'
 import { roles, users } from '../../../../src/db/schema'
-import { jsonError } from '../../../../src/lib/server-auth'
+import { AuthError, jsonError } from '../../../../src/lib/server-auth'
+import { ensureUsername } from '../../../../src/lib/username'
+import { ALLOWED_EMAIL_MESSAGE, isAllowedCollegeEmail } from '../../../../src/utils/allowedEmail'
 import type { DbUser, DbRole } from '../../../../src/types'
 
 export async function POST(request: NextRequest) {
@@ -11,21 +13,32 @@ export async function POST(request: NextRequest) {
     const header = request.headers.get('authorization') || ''
     if (!header.startsWith('Bearer ')) return NextResponse.json({ error: 'Missing authorization token' }, { status: 401 })
     const decoded = await firebaseAdminAuth.verifyIdToken(header.slice(7))
+    const email = decoded.email || ''
+    if (!isAllowedCollegeEmail(email)) {
+      throw new AuthError(ALLOWED_EMAIL_MESSAGE, 403)
+    }
     const input = await request.json().catch(() => ({}))
-    const [user] = await db.insert(users).values({
+    let [user] = await db.insert(users).values({
       firebaseUid: decoded.uid,
-      email: decoded.email || input.email,
+      email,
       name: input.name || decoded.name || null,
       photoUrl: input.photoUrl || decoded.picture || null,
     }).onConflictDoUpdate({
       target: users.firebaseUid,
       set: {
-        email: decoded.email || input.email,
+        email,
         name: input.name || decoded.name || null,
         photoUrl: input.photoUrl || decoded.picture || null,
         updatedAt: new Date(),
       },
     }).returning()
+
+    // Default public handle = USN (or email until USN is set); upgrade when USN appears
+    {
+      const username = await ensureUsername(user)
+      if (username !== user.username) user = { ...user, username }
+    }
+
     const userRoles = await db.select().from(roles).where(eq(roles.userId, user.id))
     const role = userRoles.find(item => item.role === 'admin') || userRoles[0]
     return NextResponse.json({ user: presentUser(user, role) })
@@ -39,6 +52,7 @@ function presentUser(user: DbUser, role: DbRole | undefined) {
     ...user,
     uid: user.firebaseUid,
     photoURL: user.photoUrl,
+    username: user.username,
     role: role?.role || 'member',
     roleName: role?.role || 'Member',
     permissions: role?.permissions || [],
