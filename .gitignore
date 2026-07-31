@@ -57,6 +57,11 @@ ehthumbs.db
 build/
 coverage/
 .nyc_output/
+tsconfig.tsbuildinfo
+
+# Local scrape / extract dumps (not for git)
+extracted-events.json
+extracted-events.txt
 
 # Firebase
 .firebase/
