@@ -9,6 +9,7 @@ import ProfileForm from '../components/Profile/ProfileForm'
 import MembershipDetails from '../components/Profile/MembershipDetails'
 import QuickActions from '../components/Profile/QuickActions'
 import CertificatesSection from '../components/Profile/CertificatesSection'
+import MyEventsSection from '../components/Profile/MyEventsSection'
 
 
 const Profile = () => {
@@ -24,6 +25,7 @@ const Profile = () => {
   } = useProfileForm()
 
   const [copied, setCopied] = useState(false)
+  const [eventsCount, setEventsCount] = useState(0)
   const router = useRouter()
   const returnTo = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search).get('returnTo')
 
@@ -86,7 +88,14 @@ const Profile = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - Profile Card & Quick Actions */}
               <div className="lg:col-span-1 space-y-6">
-                {user && <ProfileCard user={user} membershipStatus={user.membership?.status || ''} membershipType={user.membership?.type || null} />}
+                {user && (
+                  <ProfileCard
+                    user={user}
+                    membershipStatus={user.membership?.status || ''}
+                    membershipType={user.membership?.type || null}
+                    eventsCount={eventsCount}
+                  />
+                )}
                 <QuickActions />
               </div>
 
@@ -101,6 +110,7 @@ const Profile = () => {
                   onSave={handleSaveWrapper}
                   onInputChange={handleInputChange as (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void}
                 />
+                <MyEventsSection onCountChange={setEventsCount} />
                 <MembershipDetails
                   user={user}
                   isEditing={isEditing}

@@ -8,9 +8,10 @@ interface ProfileCardProps {
   user: AppUser
   membershipStatus: string
   membershipType: string | null
+  eventsCount?: number
 }
 
-const ProfileCard = ({ user, membershipStatus, membershipType }: ProfileCardProps) => {
+const ProfileCard = ({ user, membershipStatus, membershipType, eventsCount }: ProfileCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -55,7 +56,7 @@ const ProfileCard = ({ user, membershipStatus, membershipType }: ProfileCardProp
         </div>
 
         {/* Stats */}
-        <ProfileStats />
+        <ProfileStats eventsCount={eventsCount} />
       </div>
     </motion.div>
   )

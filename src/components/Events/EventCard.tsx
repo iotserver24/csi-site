@@ -3,7 +3,7 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { Calendar, ArrowUpRight } from 'lucide-react'
+import { Calendar, ArrowUpRight, Users } from 'lucide-react'
 import type { Event } from '../../types'
 import { formatEventDate } from '../../utils/eventUtils'
 
@@ -64,11 +64,14 @@ const EventCard = ({ event, index: _index, onClick }: Props) => {
           )}
           {/* Scrim */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-          {event.registrationsAvailable && event.capacity != null && (
-            <div className="absolute top-3 left-3 px-2 py-1 rounded-md text-[10px] font-semibold bg-black/50 text-white backdrop-blur-sm">
-              {(event as Event & { spotsLeft?: number | null }).spotsLeft === 0
-                ? 'Full'
-                : `${(event as Event & { spotsLeft?: number | null }).spotsLeft ?? Math.max(0, event.capacity - (event.participantCount || 0))} left`}
+          {(event.registrationsAvailable || (event.participantCount ?? 0) > 0) && (
+            <div className="absolute top-3 left-3 px-2 py-1 rounded-md text-[10px] font-semibold bg-black/50 text-white backdrop-blur-sm flex items-center gap-1">
+              <Users size={10} />
+              {event.capacity != null
+                ? (event.spotsLeft === 0
+                  ? 'Full'
+                  : `${event.spotsLeft ?? Math.max(0, event.capacity - (event.participantCount || 0))} left`)
+                : `${event.participantCount || 0} in`}
             </div>
           )}
           {/* Arrow icon — top right */}
@@ -104,13 +107,22 @@ const EventCard = ({ event, index: _index, onClick }: Props) => {
             {event.title}
           </h3>
 
-          {/* Date row */}
-          {(event.date || event.time) && (
-            <div className="flex items-center gap-1.5 mt-4 text-[12px] text-gray-400 dark:text-gray-500">
-              <Calendar size={12} />
-              <span>{formatDate(event.date ? String(event.date) : '')}{event.time ? ` · ${event.time}` : ''}</span>
+          {/* Date + participants */}
+          <div className="mt-4 space-y-1">
+            {(event.date || event.time) && (
+              <div className="flex items-center gap-1.5 text-[12px] text-gray-400 dark:text-gray-500">
+                <Calendar size={12} />
+                <span>{formatDate(event.date ? String(event.date) : '')}{event.time ? ` · ${event.time}` : ''}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 text-[12px] text-gray-400 dark:text-gray-500">
+              <Users size={12} />
+              <span>
+                {event.participantCount || 0} participant{(event.participantCount || 0) === 1 ? '' : 's'}
+                {event.registrationsAvailable ? ' · open' : ''}
+              </span>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Bottom accent line — animated on hover */}

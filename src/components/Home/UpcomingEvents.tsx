@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { ArrowRight, Calendar, Sparkles } from 'lucide-react'
+import { ArrowRight, Calendar, Sparkles, Users } from 'lucide-react'
 import { api } from '../../lib/api-client'
 import type { Event } from '../../types'
 import { formatEventDate } from '../../utils/eventUtils'
@@ -21,17 +21,41 @@ function pickUpcoming(events: Event[]): Event[] {
           ? e.date.getTime()
           : Date.parse(String(e.date))
         : NaN
-      const upcoming =
+      const created = e.createdAt
+        ? e.createdAt instanceof Date
+          ? e.createdAt.getTime()
+          : Date.parse(String(e.createdAt))
+        : 0
+      const isFutureOrOpen =
         e.category === 'UPCOMING' ||
         e.registrationsAvailable === true ||
-        year >= 2026 ||
-        (!Number.isNaN(t) && t >= now - 86400000)
-      return { e, upcoming, t: Number.isNaN(t) ? year * 1e12 : t, year }
+        e.featured === true ||
+        year >= new Date().getFullYear() ||
+        (!Number.isNaN(t) && t >= now - 86400000) ||
+        // Newly added published events (last 60 days) always surface
+        (created > 0 && now - created < 60 * 86400000)
+      return {
+        e,
+        upcoming: isFutureOrOpen,
+        t: Number.isNaN(t) ? year * 1e12 : t,
+        year,
+        created,
+        open: e.registrationsAvailable ? 1 : 0,
+        featured: e.featured ? 1 : 0,
+      }
     })
     .filter(x => x.upcoming)
-    .sort((a, b) => a.t - b.t || b.year - a.year)
+    // Open regs + featured first, then soonest date, then newest
+    .sort(
+      (a, b) =>
+        b.open - a.open ||
+        b.featured - a.featured ||
+        a.t - b.t ||
+        b.created - a.created ||
+        b.year - a.year
+    )
 
-  return scored.slice(0, 3).map(x => x.e)
+  return scored.slice(0, 6).map(x => x.e)
 }
 
 const Skeleton = () => (
@@ -107,7 +131,7 @@ const UpcomingEvents: React.FC = () => {
             <Sparkles className="mx-auto mb-3 text-sky-500" size={22} />
             <p className="font-display text-xl font-bold mb-2">Queue is warming up</p>
             <p className="text-sm text-gray-500 dark:text-white/45 mb-6 max-w-md mx-auto">
-              New 2026–27 events land here. Browse the full archive while the season loads.
+              New events land here as soon as they are published. Browse the full archive while the season loads.
             </p>
             <Link
               href="/events"
@@ -127,7 +151,7 @@ const UpcomingEvents: React.FC = () => {
                 transition={{ duration: 0.4, delay: 0.06 * index }}
               >
                 <Link
-                  href="/events"
+                  href={`/events?event=${event.id}`}
                   className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] hover:border-sky-400/50 dark:hover:border-sky-400/40 hover:shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-gray-100 dark:bg-white/5">
@@ -146,20 +170,37 @@ const UpcomingEvents: React.FC = () => {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                    {event.type && (
-                      <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-wider px-2 py-1 rounded-md bg-black/60 text-sky-100 border border-white/10">
-                        {event.type}
-                      </span>
-                    )}
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                      {event.type && (
+                        <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-1 rounded-md bg-black/60 text-sky-100 border border-white/10">
+                          {event.type}
+                        </span>
+                      )}
+                      {event.registrationsAvailable && (
+                        <span className="font-mono text-[10px] uppercase tracking-wider px-2 py-1 rounded-md bg-emerald-500/90 text-white border border-emerald-300/30">
+                          Open
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-1 flex-col p-5">
                     <h3 className="font-semibold line-clamp-2 mb-3 group-hover:text-sky-600 dark:group-hover:text-sky-200 transition-colors">
                       {event.title}
                     </h3>
-                    <p className="mt-auto flex items-center gap-1.5 font-mono text-[11px] text-gray-500 dark:text-white/40">
-                      <Calendar size={12} />
-                      {event.date ? formatEventDate(String(event.date)) : event.year || 'TBA'}
-                    </p>
+                    <div className="mt-auto space-y-1.5">
+                      <p className="flex items-center gap-1.5 font-mono text-[11px] text-gray-500 dark:text-white/40">
+                        <Calendar size={12} />
+                        {event.date ? formatEventDate(String(event.date)) : event.year || 'TBA'}
+                      </p>
+                      <p className="flex items-center gap-1.5 font-mono text-[11px] text-gray-500 dark:text-white/40">
+                        <Users size={12} />
+                        {event.participantCount || 0} joined
+                        {event.capacity != null && event.spotsLeft != null
+                          ? ` · ${event.spotsLeft} left`
+                          : ''}
+                        {event.registrationsAvailable ? ' · participate →' : ''}
+                      </p>
+                    </div>
                   </div>
                 </Link>
               </motion.div>

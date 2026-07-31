@@ -4,7 +4,7 @@ import Image from 'next/image'
 import {
   X, Calendar, Clock, MapPin, DollarSign,
   User, AlertCircle, Share2, Copy, Loader,
-  Users as TeamIcon, Hash, Plus
+  Users as TeamIcon, Hash, Plus, CheckCircle2
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { formatEventDate } from '../../utils/eventUtils'
@@ -24,15 +24,24 @@ interface TeamRegistration {
   teamCode: string
   teamSize: number
   members?: Array<{ userId: string; name?: string; email?: string; role?: string; joinedAt?: Date }>
+  registrationCode?: string
+}
+
+export type RegistrationUpdate = {
+  eventId: string
+  participantCount: number
+  spotsLeft: number | null
+  registered: boolean
 }
 
 interface Props {
   event: Event
   isOpen: boolean
   onClose: () => void
+  onRegistered?: (update: RegistrationUpdate) => void
 }
 
-const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
+const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
   const { user, signInWithGoogle, isProfileIncomplete } = useAuth()
   const [showTeamForm, setShowTeamForm] = useState(false)
   const [showJoinTeamForm, setShowJoinTeamForm] = useState(false)
@@ -40,16 +49,32 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
   const [teamCode, setTeamCode] = useState('')
   const [teamSize, setTeamSize] = useState(2)
   const [loading, setLoading] = useState(false)
+  const [checkingReg, setCheckingReg] = useState(false)
+  const [isRegistered, setIsRegistered] = useState(false)
   const [userTeam, setUserTeam] = useState<UserTeam | null>(null)
+  const [participantCount, setParticipantCount] = useState(event.participantCount || 0)
+  const [spotsLeft, setSpotsLeft] = useState<number | null>(event.spotsLeft ?? null)
   const [showOtherTeams, setShowOtherTeams] = useState(false)
   const [otherTeams, setOtherTeams] = useState<TeamRegistration[]>([])
   const [otherTeamsLoading, setOtherTeamsLoading] = useState(false)
   const modalRef = useRef(null)
 
+  const dbUserId = user?.id
+  const matchesUser = (id?: string | null) => Boolean(id && (id === dbUserId || id === user?.uid))
+
   useEffect(() => {
-    if (event && user && isOpen) checkUserTeam()
+    setParticipantCount(event.participantCount || 0)
+    setSpotsLeft(event.spotsLeft ?? (event.capacity != null ? Math.max(0, event.capacity - (event.participantCount || 0)) : null))
+    setIsRegistered(false)
+    setUserTeam(null)
+    setShowTeamForm(false)
+    setShowJoinTeamForm(false)
+  }, [event.id, event.participantCount, event.spotsLeft, event.capacity])
+
+  useEffect(() => {
+    if (event && user && isOpen) void checkUserRegistration()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event, user, isOpen])
+  }, [event.id, user?.id, isOpen])
 
   useEffect(() => {
     if (!isOpen) return
@@ -58,15 +83,44 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
     return () => document.removeEventListener('keydown', handleKey)
   }, [isOpen, onClose])
 
-  const checkUserTeam = async () => {
-    if (!user || event.type !== 'TEAM') return
+  const applyCounts = (count?: number, left?: number | null) => {
+    if (typeof count === 'number') setParticipantCount(count)
+    if (left !== undefined) setSpotsLeft(left)
+    if (typeof count === 'number') {
+      onRegistered?.({
+        eventId: event.id,
+        participantCount: count,
+        spotsLeft: left ?? (event.capacity != null ? Math.max(0, event.capacity - count) : null),
+        registered: true,
+      })
+    }
+  }
+
+  const checkUserRegistration = async () => {
+    if (!user) return
+    setCheckingReg(true)
     try {
       const { registrations } = await api.get(`/api/events/${event.id}/registrations?mine=true`) as { registrations?: TeamRegistration[] }
       if (registrations?.length) {
         const registration = registrations[0]
-        setUserTeam({ teamName: registration.teamName, teamCode: registration.teamCode, teamSize: registration.teamSize, members: registration.members || [] })
+        setIsRegistered(true)
+        if (registration.teamName) {
+          setUserTeam({
+            teamName: registration.teamName,
+            teamCode: registration.teamCode || registration.registrationCode || '',
+            teamSize: registration.teamSize,
+            members: registration.members || [],
+          })
+        }
+      } else {
+        setIsRegistered(false)
+        setUserTeam(null)
       }
-    } catch { console.error('Failed to fetch teams') }
+    } catch {
+      /* ignore — user can still try register */
+    } finally {
+      setCheckingReg(false)
+    }
   }
 
   const fetchOtherTeams = async () => {
@@ -113,64 +167,106 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
 
   const handleIndividualRegistration = async () => {
     if (!user) { toast.error('Please login first'); return }
+    if (isRegistered) { toast.message("You're already registered for this event"); return }
     if (!checkProfileComplete()) return
     if (!event.registrationsAvailable) { toast.error('Registrations are closed for this event'); return }
-    if (event.spotsLeft === 0) { toast.error('Event is full'); return }
+    if (spotsLeft === 0) { toast.error('Event is full'); return }
     setLoading(true)
     try {
-      await api.post(`/api/events/${event.id}/registrations`, { type: 'individual', name: user.name || user.email })
-      toast.success('Successfully registered for the event!')
-      onClose()
+      const body = await api.post(`/api/events/${event.id}/registrations`, { type: 'individual', name: user.name || user.email }) as {
+        participantCount?: number
+        spotsLeft?: number | null
+      }
+      setIsRegistered(true)
+      applyCounts(body.participantCount ?? participantCount + 1, body.spotsLeft)
+      toast.success("You're in! Registration confirmed.")
     } catch (error) {
-      console.error('Registration error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to register. Please try again.')
+      const message = error instanceof Error ? error.message : 'Failed to register. Please try again.'
+      if (/already registered/i.test(message)) {
+        setIsRegistered(true)
+        toast.message("You're already registered for this event")
+      } else {
+        console.error('Registration error:', error)
+        toast.error(message)
+      }
     } finally { setLoading(false) }
   }
 
   const handleCreateTeam = async () => {
     if (!user) { toast.error('Please login first'); return }
+    if (isRegistered) { toast.message("You're already registered for this event"); return }
     if (!teamName.trim()) { toast.error('Please enter a team name'); return }
     if (!checkProfileComplete()) return
     if (!event.registrationsAvailable) { toast.error('Registrations are closed for this event'); return }
-    if (event.spotsLeft === 0) { toast.error('Event is full'); return }
+    if (spotsLeft === 0) { toast.error('Event is full'); return }
     setLoading(true)
     try {
       const code = await generateUniqueTeamCode()
-      await api.post(`/api/events/${event.id}/registrations`, {
+      const body = await api.post(`/api/events/${event.id}/registrations`, {
         type: 'team',
         teamName: teamName.trim(),
         teamCode: code,
         teamSize,
         name: user.name || user.email,
-      })
-      toast.success(`Team created! Share invite code: ${code}`)
+      }) as { participantCount?: number; spotsLeft?: number | null; registration?: { teamCode?: string } }
+      const finalCode = body.registration?.teamCode || code
+      toast.success(`Team created! Share invite code: ${finalCode}`)
+      setIsRegistered(true)
       setUserTeam({
         teamName: teamName.trim(),
-        teamCode: code,
+        teamCode: finalCode,
         teamSize,
-        members: [{ userId: user.uid || user.id, name: user.name || undefined, email: user.email || undefined, role: 'leader' }],
+        members: [{ userId: user.id || user.uid, name: user.name || undefined, email: user.email || undefined, role: 'leader' }],
       })
+      applyCounts(body.participantCount ?? participantCount + 1, body.spotsLeft)
       setShowTeamForm(false)
     } catch (error: unknown) {
-      console.error('Team creation error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to create team. Please try again.')
+      const message = error instanceof Error ? error.message : 'Failed to create team. Please try again.'
+      if (/already registered/i.test(message)) {
+        setIsRegistered(true)
+        toast.message("You're already registered for this event")
+        void checkUserRegistration()
+      } else {
+        console.error('Team creation error:', error)
+        toast.error(message)
+      }
     } finally { setLoading(false) }
   }
 
   const handleJoinTeam = async () => {
     if (!teamCode.trim()) { toast.error('Please enter a team code'); return }
+    if (isRegistered) { toast.message("You're already registered for this event"); return }
     if (!checkProfileComplete()) return
     if (!event.registrationsAvailable) { toast.error('Registrations are closed for this event'); return }
     setLoading(true)
     try {
       const { registration: teamData } = await api.get(`/api/events/${event.id}/registrations/team?code=${teamCode.trim().toUpperCase()}`) as { registration?: TeamRegistration }
       if (!teamData) { toast.error('Team code not found'); setLoading(false); return }
-      const alreadyMember = teamData.members?.some((m: { userId: string }) => m.userId === user?.uid)
-      if (alreadyMember) { toast.error('You are already a member of this team'); setLoading(false); return }
+      const alreadyMember = teamData.members?.some((m: { userId: string }) => matchesUser(m.userId))
+      if (alreadyMember) {
+        setIsRegistered(true)
+        setUserTeam({ teamName: teamData.teamName, teamCode: teamData.teamCode, teamSize: teamData.teamSize, members: teamData.members || [] })
+        toast.message("You're already a member of this team")
+        setLoading(false)
+        return
+      }
       if (teamData.members && teamData.members.length >= teamData.teamSize) { toast.error('This team is full'); setLoading(false); return }
-      await api.post(`/api/events/${event.id}/registrations`, { type: 'join', teamCode: teamCode.trim().toUpperCase() })
+      const body = await api.post(`/api/events/${event.id}/registrations`, { type: 'join', teamCode: teamCode.trim().toUpperCase() }) as {
+        participantCount?: number
+        spotsLeft?: number | null
+      }
       toast.success('Successfully joined the team!')
-      setUserTeam({ teamName: teamData.teamName, teamCode: teamData.teamCode, teamSize: teamData.teamSize, members: [...(teamData.members || []), { userId: user!.uid, name: user!.name || undefined, email: user!.email || undefined, role: 'member', joinedAt: new Date() }] })
+      setIsRegistered(true)
+      setUserTeam({
+        teamName: teamData.teamName,
+        teamCode: teamData.teamCode,
+        teamSize: teamData.teamSize,
+        members: [
+          ...(teamData.members || []),
+          { userId: user!.id || user!.uid, name: user!.name || undefined, email: user!.email || undefined, role: 'member', joinedAt: new Date() },
+        ],
+      })
+      applyCounts(body.participantCount ?? participantCount + 1, body.spotsLeft)
       setShowJoinTeamForm(false)
     } catch (error: unknown) {
       console.error('Join team error:', error)
@@ -179,7 +275,13 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
         if (typeof error === 'object') message = (error as { message?: string; code?: string }).message || (error as { code?: string }).code || message
         else message = String(error)
       }
-      toast.error(message)
+      if (/already registered|already a team member/i.test(message)) {
+        setIsRegistered(true)
+        void checkUserRegistration()
+        toast.message("You're already registered for this event")
+      } else {
+        toast.error(message)
+      }
     } finally { setLoading(false) }
   }
 
@@ -194,8 +296,11 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
 
   if (!isOpen || !event) return null
 
-  const isTeamEvent = event.type === 'TEAM'
-  const isRegistered = userTeam !== null
+  const isTeamEvent = (event.type || '').toUpperCase() === 'TEAM'
+  const seatsLabel =
+    event.capacity != null
+      ? `${participantCount} / ${event.capacity}${spotsLeft != null ? ` · ${spotsLeft} left` : ''}`
+      : `${participantCount} registered`
 
   return (
     <AnimatePresence>
@@ -266,14 +371,12 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
                     { icon: Clock, color: 'text-purple-500', label: 'Time', value: event.time || 'N/A' },
                     { icon: MapPin, color: 'text-pink-500', label: 'Location', value: event.venue || event.location || 'N/A' },
                     { icon: DollarSign, color: 'text-emerald-500', label: 'Entry Fee', value: `₹${event.entryFee || 0}` },
-                    ...(event.capacity != null
-                      ? [{
-                          icon: TeamIcon,
-                          color: 'text-cyan-500',
-                          label: 'Seats',
-                          value: `${event.participantCount || 0} / ${event.capacity}${(event as Event & { spotsLeft?: number | null }).spotsLeft != null ? ` · ${(event as Event & { spotsLeft?: number | null }).spotsLeft} left` : ''}`,
-                        }]
-                      : []),
+                    {
+                      icon: TeamIcon,
+                      color: 'text-cyan-500',
+                      label: event.capacity != null ? 'Seats' : 'Participants',
+                      value: seatsLabel,
+                    },
                   ].map(({ icon: Icon, color, label, value }) => (
                     <div key={label} className="flex items-start gap-3">
                       <Icon className={`w-5 h-5 ${color} mt-0.5`} />
@@ -329,6 +432,7 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
                   <div className="text-center space-y-4 bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
                     <AlertCircle className="w-12 h-12 text-gray-400 mx-auto" />
                     <p className="text-gray-600 dark:text-gray-400">Please login to register for this event</p>
+                    <p className="text-sm text-gray-500">{participantCount} already in</p>
                     <button onClick={handleLogin} className="px-5 py-2 rounded-lg font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-100 transition">
                       Login with Google
                     </button>
@@ -341,18 +445,42 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
                       Go to Profile
                     </button>
                   </div>
-                ) : isTeamEvent && !isRegistered ? (
+                ) : checkingReg ? (
+                  <div className="flex justify-center py-4 text-gray-500">
+                    <Loader className="w-5 h-5 animate-spin" />
+                  </div>
+                ) : isRegistered ? (
+                  <div className="text-center space-y-3 rounded-xl p-6 bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-800/50">
+                    <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
+                    <p className="font-semibold text-emerald-800 dark:text-emerald-300">You&apos;re registered</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {seatsLabel}. No need to apply again.
+                    </p>
+                    {isTeamEvent && userTeam && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Team <span className="font-medium">{userTeam.teamName}</span>
+                        {userTeam.teamCode ? <> · code <span className="font-mono font-semibold">{userTeam.teamCode}</span></> : null}
+                      </p>
+                    )}
+                    {event.allowViewOtherTeams && isTeamEvent && (
+                      <button onClick={() => { setShowOtherTeams(true); fetchOtherTeams() }} className="mt-2 px-4 py-2 rounded-lg text-sm font-semibold bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 ring-1 ring-black/5 dark:ring-white/10">
+                        View other teams
+                      </button>
+                    )}
+                  </div>
+                ) : isTeamEvent ? (
                   <div className="space-y-4">
                     {!showTeamForm && !showJoinTeamForm && (
-                      <div className="flex gap-3">
-                        <button onClick={() => setShowTeamForm(true)} className="flex-1 px-4 py-2 rounded-lg font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-100 transition flex items-center justify-center gap-2">
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <button onClick={() => setShowTeamForm(true)} className="flex-1 px-4 py-2.5 rounded-lg font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-100 transition flex items-center justify-center gap-2">
                           <Plus className="w-4 h-4" /> Create Team
                         </button>
-                        <button onClick={() => setShowJoinTeamForm(true)} className="flex-1 px-4 py-2 rounded-lg font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center justify-center gap-2">
+                        <button onClick={() => setShowJoinTeamForm(true)} className="flex-1 px-4 py-2.5 rounded-lg font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center justify-center gap-2">
                           <TeamIcon className="w-4 h-4" /> Join Team
                         </button>
                       </div>
                     )}
+                    <p className="text-center text-xs text-gray-500">{participantCount} participant{participantCount === 1 ? '' : 's'} so far</p>
                     {event.allowViewOtherTeams && (
                       <div>
                         <button onClick={() => { setShowOtherTeams(true); fetchOtherTeams() }} className="w-full px-4 py-2 rounded-lg font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center justify-center gap-2">
@@ -408,13 +536,20 @@ const EventDetailsModal = ({ event, isOpen, onClose }: Props) => {
                       </div>
                     )}
                   </div>
-                ) : !isTeamEvent ? (
-                  <div className="text-center">
-                    <button onClick={handleIndividualRegistration} disabled={loading} className="px-6 py-2.5 rounded-lg font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-100 transition">
-                      {loading ? <Loader className="w-4 h-4 animate-spin mx-auto" /> : <span className="flex items-center gap-2"><User className="w-4 h-4" /> Register Now</span>}
+                ) : (
+                  <div className="text-center space-y-3">
+                    <button
+                      onClick={handleIndividualRegistration}
+                      disabled={loading || spotsLeft === 0}
+                      className="px-6 py-2.5 rounded-lg font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-100 transition disabled:opacity-50"
+                    >
+                      {loading ? <Loader className="w-4 h-4 animate-spin mx-auto" /> : <span className="flex items-center gap-2"><User className="w-4 h-4" /> Participate</span>}
                     </button>
+                    <p className="text-xs text-gray-500">
+                      {spotsLeft === 0 ? 'Event is full' : `${participantCount} registered${spotsLeft != null ? ` · ${spotsLeft} spots left` : ''}`}
+                    </p>
                   </div>
-                ) : null}
+                )}
               </div>
             )}
 

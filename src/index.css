@@ -154,7 +154,7 @@
   }
 
   .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply w-full max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8;
   }
 
   /* ── Typography classes (aligned to design spec) ───── */

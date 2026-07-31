@@ -12,6 +12,20 @@ export const useEvents = (initialYear: string = '2024') => {
   const [selectedType, setSelectedType] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
 
+  const loadEvents = async () => {
+    setLoading(true)
+    try {
+      const { events: rows } = await api.get('/api/events')
+      setAllEvents(Array.isArray(rows) ? (rows as Event[]) : [])
+      setError(null)
+    } catch (err: unknown) {
+      setAllEvents([])
+      setError(err instanceof Error ? err.message : 'Failed to load events')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     let cancelled = false
     setLoading(true)
@@ -34,6 +48,10 @@ export const useEvents = (initialYear: string = '2024') => {
       cancelled = true
     }
   }, [])
+
+  const patchEvent = (id: string, patch: Partial<Event>) => {
+    setAllEvents(prev => prev.map(e => (e.id === id ? { ...e, ...patch } : e)))
+  }
 
   const events = useMemo(() => {
     const year = Number(selectedYear)
@@ -67,5 +85,7 @@ export const useEvents = (initialYear: string = '2024') => {
     searchTerm,
     setSearchTerm,
     totalCount: allEvents.length,
+    patchEvent,
+    refresh: loadEvents,
   }
 }

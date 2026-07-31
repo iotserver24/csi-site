@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import EventsHero from '../components/Events/EventsHero'
 import EventsFilter from '../components/Events/EventsFilter'
 import EventsGrid from '../components/Events/EventsGrid'
 import EventsEmpty from '../components/Events/EventsEmpty'
-import EventDetailsModal from '../components/Events/EventDetailsModal'
+import EventDetailsModal, { type RegistrationUpdate } from '../components/Events/EventDetailsModal'
 import { useEvents } from '../hooks/useEvents'
 import { getEventById } from '../services/eventService'
 import { toast } from 'sonner'
@@ -23,6 +23,8 @@ const Events = () => {
     selectedType,
     setSelectedType,
     totalCount,
+    patchEvent,
+    refresh,
   } = useEvents('2026')
 
   // Check for event parameter in URL on mount
@@ -67,6 +69,19 @@ const Events = () => {
     router.replace('/events')
   }
 
+  const handleRegistered = useCallback((update: RegistrationUpdate) => {
+    patchEvent(update.eventId, {
+      participantCount: update.participantCount,
+      spotsLeft: update.spotsLeft,
+    })
+    setSelectedEvent(prev =>
+      prev && prev.id === update.eventId
+        ? { ...prev, participantCount: update.participantCount, spotsLeft: update.spotsLeft }
+        : prev
+    )
+    void refresh()
+  }, [patchEvent, refresh])
+
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
@@ -101,6 +116,7 @@ const Events = () => {
           event={selectedEvent as Event}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
+          onRegistered={handleRegistered}
         />
       )}
     </div>

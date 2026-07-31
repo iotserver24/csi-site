@@ -18,6 +18,32 @@ async function seatsTaken(eventId: string): Promise<number> {
   return n
 }
 
+async function bumpParticipantCount(eventId: string) {
+  const [updated] = await db
+    .update(events)
+    .set({ participantCount: sql`${events.participantCount} + 1`, updatedAt: new Date() })
+    .where(eq(events.id, eventId))
+    .returning({ participantCount: events.participantCount, capacity: events.capacity })
+  await invalidateCache('events:')
+  const participantCount = updated?.participantCount ?? 0
+  const capacity = updated?.capacity ?? null
+  return {
+    participantCount,
+    spotsLeft: capacity != null ? Math.max(0, capacity - participantCount) : null,
+  }
+}
+
+function findUserRegistration(
+  rows: Array<{ userId: string | null; teamMembers: unknown }>,
+  userId: string
+) {
+  return rows.find(row => {
+    if (row.userId === userId) return true
+    const members = Array.isArray(row.teamMembers) ? (row.teamMembers as TeamMember[]) : []
+    return members.some(m => m.userId === userId)
+  })
+}
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
@@ -53,15 +79,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const eventType = (event.type || 'INDIVIDUAL').toUpperCase()
 
     const existing = await db.select().from(eventRegistrations).where(eq(eventRegistrations.eventId, eventId))
-    const already = existing.some(row => {
-      if (row.userId === context.user.id) return true
-      const members = Array.isArray(row.teamMembers) ? (row.teamMembers as TeamMember[]) : []
-      return members.some(m => m.userId === context.user.id)
-    })
+    const alreadyRow = findUserRegistration(existing, context.user.id)
 
     if (input.type === 'join') {
       if (eventType !== 'TEAM') return NextResponse.json({ error: 'Not a team event' }, { status: 400 })
-      if (already) return NextResponse.json({ error: 'You are already registered for this event' }, { status: 409 })
+      if (alreadyRow) {
+        return NextResponse.json(
+          { error: 'You are already registered for this event', alreadyRegistered: true, registration: presentRegistration(alreadyRow) },
+          { status: 409 }
+        )
+      }
 
       const code = String(input.teamCode || '').toUpperCase().trim()
       const team = existing.find(row => row.registrationCode === code && row.teamName)
@@ -69,7 +96,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
       const members = Array.isArray(team.teamMembers) ? ([...team.teamMembers] as TeamMember[]) : []
       if (members.some(m => m.userId === context.user.id)) {
-        return NextResponse.json({ error: 'Already a team member' }, { status: 409 })
+        return NextResponse.json({ error: 'Already a team member', alreadyRegistered: true }, { status: 409 })
       }
       const teamSize = Number((team.metadata as { teamSize?: number })?.teamSize || 2)
       if (members.length >= teamSize) return NextResponse.json({ error: 'This team is full' }, { status: 409 })
@@ -85,12 +112,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         .set({ teamMembers: updated, updatedAt: new Date() })
         .where(eq(eventRegistrations.id, team.id))
         .returning()
-      await db.update(events).set({ participantCount: sql`${events.participantCount} + 1`, updatedAt: new Date() }).where(eq(events.id, eventId))
-      await invalidateCache('events:')
-      return NextResponse.json({ registration: presentRegistration(registration) })
+      const counts = await bumpParticipantCount(eventId)
+      return NextResponse.json({ registration: presentRegistration(registration), ...counts })
     }
 
-    if (already) return NextResponse.json({ error: 'You are already registered for this event' }, { status: 409 })
+    if (alreadyRow) {
+      return NextResponse.json(
+        {
+          error: 'You are already registered for this event',
+          alreadyRegistered: true,
+          registration: presentRegistration(alreadyRow),
+          participantCount: event.participantCount || 0,
+          spotsLeft: event.capacity != null ? Math.max(0, event.capacity - (event.participantCount || 0)) : null,
+        },
+        { status: 409 }
+      )
+    }
 
     if (event.capacity != null) {
       const taken = await seatsTaken(eventId)
@@ -120,9 +157,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         status: 'registered',
       }
       const [created] = await db.insert(eventRegistrations).values(registration).returning()
-      await db.update(events).set({ participantCount: sql`${events.participantCount} + 1`, updatedAt: new Date() }).where(eq(events.id, eventId))
-      await invalidateCache('events:')
-      return NextResponse.json({ registration: presentRegistration(created) }, { status: 201 })
+      const counts = await bumpParticipantCount(eventId)
+      return NextResponse.json({ registration: presentRegistration(created), ...counts }, { status: 201 })
     }
 
     if (eventType === 'TEAM') {
@@ -141,9 +177,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       status: 'registered',
     }
     const [created] = await db.insert(eventRegistrations).values(registration).returning()
-    await db.update(events).set({ participantCount: sql`${events.participantCount} + 1`, updatedAt: new Date() }).where(eq(events.id, eventId))
-    await invalidateCache('events:')
-    return NextResponse.json({ registration: presentRegistration(created) }, { status: 201 })
+    const counts = await bumpParticipantCount(eventId)
+    return NextResponse.json({ registration: presentRegistration(created), ...counts }, { status: 201 })
   } catch (error) {
     return jsonError(error as Error)
   }
@@ -152,12 +187,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 const cryptoRandom = () => Math.random().toString(36).slice(2, 10).toUpperCase()
 
 const presentRegistration = (row: {
-  registrationCode: string
-  teamMembers: unknown
-  metadata: unknown
+  registrationCode?: string | null
+  teamMembers?: unknown
+  metadata?: unknown
+  [key: string]: unknown
 }) => ({
   ...row,
   teamCode: row.registrationCode,
   members: row.teamMembers,
-  teamSize: (row.metadata as { teamSize?: number })?.teamSize,
+  teamSize: (row.metadata as { teamSize?: number } | null | undefined)?.teamSize,
 })
