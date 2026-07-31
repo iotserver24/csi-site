@@ -148,8 +148,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsProfileIncomplete(!isComplete(updated as AppUser))
       toast.success('Profile updated successfully')
       return true
-    } catch {
-      toast.error('Failed to update profile')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update profile')
       return false
     }
   }

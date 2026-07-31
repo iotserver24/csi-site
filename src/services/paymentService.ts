@@ -1,5 +1,5 @@
 import { api } from '../lib/api-client'
-import { membershipPlans } from '../data/membershipData'
+import { getPlanById, getPlanPriceBreakdown, membershipPlans } from '../data/membershipData'
 import { isValidEmail, isValidPhone, isValidUSN, sanitizeFormData } from '../utils/securityUtils'
 
 interface PaymentFormData {
@@ -11,9 +11,11 @@ interface PaymentFormData {
 }
 
 interface RazorpayResponse {
-  razorpay_payment_id: string
-  razorpay_order_id: string
-  razorpay_signature: string
+  razorpay_payment_id?: string
+  razorpay_order_id?: string
+  razorpay_invoice_id?: string
+  razorpay_signature?: string
+  [key: string]: unknown
 }
 
 declare global {
@@ -39,17 +41,56 @@ class PaymentService {
   async initializePayment(userId: string, planId: string, formData: PaymentFormData, onSuccess: (result: Record<string, unknown>) => void, onFailure: (error: string) => void) {
     try {
       if (!this.razorpayKeyId) throw new Error('Payment gateway not configured')
-      const order = await this.createOrder(userId, planId, formData)
-      const plan = membershipPlans.find(item => item.id === planId)
+      const order = await this.createOrder(userId, planId, formData) as {
+        amount: number
+        currency: string
+        orderId: string
+        invoiceId?: string
+        description?: string
+        breakdown?: { membership: number; transactionFee: number; total: number }
+      }
+      if (!order.orderId) throw new Error('Payment order was not created')
+      const plan = getPlanById(planId)
       if (!plan) throw new Error('Plan not found')
+      const breakdown = order.breakdown || getPlanPriceBreakdown(plan)
+      const description =
+        order.description
+        || `${plan.name} ₹${breakdown.membership} + Transaction fee ₹${breakdown.transactionFee}`
+      const createdOrderId = order.orderId
+      const createdInvoiceId = order.invoiceId
       const razorpay = new window.Razorpay({
-        key: this.razorpayKeyId, amount: order.amount, currency: order.currency, name: 'CSI NMAMIT',
-        description: `${plan.name} - ${plan.duration}`, image: '/csi-logo.png', order_id: order.orderId,
+        key: this.razorpayKeyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'CSI NMAMIT',
+        description,
+        image: '/csi-logo.png',
+        order_id: createdOrderId,
         prefill: { name: formData.name, email: formData.email, contact: formData.phone },
+        notes: {
+          userId,
+          planId,
+          membershipAmount: String(breakdown.membership),
+          transactionFee: String(breakdown.transactionFee),
+        },
         handler: async (response: RazorpayResponse) => {
-          const result = await api.post('/api/payments/verify', response as unknown as Record<string, unknown>)
-          if (!result.verified) throw new Error('Payment verification failed')
-          onSuccess(result)
+          try {
+            // Invoice checkout often omits razorpay_order_id — always fall back to create-order ids
+            const verifyPayload: Record<string, unknown> = {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id || createdOrderId,
+              razorpay_signature: response.razorpay_signature,
+              razorpay_invoice_id: response.razorpay_invoice_id || createdInvoiceId,
+            }
+            if (!verifyPayload.razorpay_payment_id || !verifyPayload.razorpay_signature) {
+              throw new Error('Payment completed but Razorpay did not return verification fields')
+            }
+            const result = await api.post('/api/payments/verify', verifyPayload)
+            if (!result.verified) throw new Error('Payment verification failed')
+            onSuccess(result)
+          } catch (err) {
+            onFailure((err as Error).message || 'Payment verification failed')
+          }
         },
         modal: { ondismiss: () => onFailure('Payment cancelled by user') },
         theme: { color: '#3b82f6' },

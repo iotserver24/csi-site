@@ -20,11 +20,13 @@ interface UserTeam {
 }
 
 interface TeamRegistration {
+  id?: string
   teamName: string
-  teamCode: string
-  teamSize: number
+  teamCode?: string
+  teamSize?: number
   members?: Array<{ userId: string; name?: string; email?: string; role?: string; joinedAt?: Date }>
   registrationCode?: string
+  memberCount?: number
 }
 
 export type RegistrationUpdate = {
@@ -62,19 +64,38 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
   const dbUserId = user?.id
   const matchesUser = (id?: string | null) => Boolean(id && (id === dbUserId || id === user?.uid))
 
+  // Only reset registration UI when switching events — NOT when counts update after create/join
   useEffect(() => {
-    setParticipantCount(event.participantCount || 0)
-    setSpotsLeft(event.spotsLeft ?? (event.capacity != null ? Math.max(0, event.capacity - (event.participantCount || 0)) : null))
     setIsRegistered(false)
     setUserTeam(null)
     setShowTeamForm(false)
     setShowJoinTeamForm(false)
-  }, [event.id, event.participantCount, event.spotsLeft, event.capacity])
+    setTeamName('')
+    setTeamCode('')
+  }, [event.id])
+
+  // Keep capacity counters in sync with event props (separate from form reset above)
+  useEffect(() => {
+    setParticipantCount(event.participantCount || 0)
+    setSpotsLeft(event.spotsLeft ?? (event.capacity != null ? Math.max(0, event.capacity - (event.participantCount || 0)) : null))
+  }, [event.participantCount, event.spotsLeft, event.capacity])
 
   useEffect(() => {
     if (event && user && isOpen) void checkUserRegistration()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event.id, user?.id, isOpen])
+
+  // Deep link: /events?event=ID&code=TEAMCODE → prefill join form
+  useEffect(() => {
+    if (!isOpen || typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const code = (params.get('code') || params.get('teamCode') || '').trim().toUpperCase()
+    if (code) {
+      setTeamCode(code)
+      setShowJoinTeamForm(true)
+      setShowTeamForm(false)
+    }
+  }, [isOpen, event.id])
 
   useEffect(() => {
     if (!isOpen) return
@@ -208,18 +229,37 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
         teamCode: code,
         teamSize,
         name: user.name || user.email,
-      }) as { participantCount?: number; spotsLeft?: number | null; registration?: { teamCode?: string } }
-      const finalCode = body.registration?.teamCode || code
-      toast.success(`Team created! Share invite code: ${finalCode}`)
+      }) as {
+        participantCount?: number
+        spotsLeft?: number | null
+        registration?: {
+          teamCode?: string
+          registrationCode?: string
+          teamName?: string
+          members?: UserTeam['members']
+          teamMembers?: UserTeam['members']
+          teamSize?: number
+          metadata?: { teamSize?: number }
+        }
+      }
+      const reg = body.registration
+      const finalCode = reg?.teamCode || reg?.registrationCode || code
+      const members = reg?.members || reg?.teamMembers || [
+        { userId: user.id || user.uid || '', name: user.name || undefined, email: user.email || undefined, role: 'leader' },
+      ]
+      const size = reg?.teamSize || reg?.metadata?.teamSize || teamSize
       setIsRegistered(true)
+      setShowTeamForm(false)
+      setShowJoinTeamForm(false)
       setUserTeam({
-        teamName: teamName.trim(),
+        teamName: reg?.teamName || teamName.trim(),
         teamCode: finalCode,
-        teamSize,
-        members: [{ userId: user.id || user.uid, name: user.name || undefined, email: user.email || undefined, role: 'leader' }],
+        teamSize: size,
+        members,
       })
       applyCounts(body.participantCount ?? participantCount + 1, body.spotsLeft)
-      setShowTeamForm(false)
+      toast.success('Team created! Share the invite link with teammates.')
+      void checkUserRegistration()
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to create team. Please try again.'
       if (/already registered/i.test(message)) {
@@ -245,29 +285,39 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
       const alreadyMember = teamData.members?.some((m: { userId: string }) => matchesUser(m.userId))
       if (alreadyMember) {
         setIsRegistered(true)
-        setUserTeam({ teamName: teamData.teamName, teamCode: teamData.teamCode, teamSize: teamData.teamSize, members: teamData.members || [] })
+        setUserTeam({
+          teamName: teamData.teamName,
+          teamCode: teamData.teamCode || teamData.registrationCode || teamCode.trim().toUpperCase(),
+          teamSize: teamData.teamSize,
+          members: teamData.members || [],
+        })
         toast.message("You're already a member of this team")
         setLoading(false)
         return
       }
-      if (teamData.members && teamData.members.length >= teamData.teamSize) { toast.error('This team is full'); setLoading(false); return }
+      const maxSize = teamData.teamSize || 99
+      if (teamData.members && teamData.members.length >= maxSize) { toast.error('This team is full'); setLoading(false); return }
       const body = await api.post(`/api/events/${event.id}/registrations`, { type: 'join', teamCode: teamCode.trim().toUpperCase() }) as {
         participantCount?: number
         spotsLeft?: number | null
+        registration?: TeamRegistration
       }
       toast.success('Successfully joined the team!')
       setIsRegistered(true)
+      setShowJoinTeamForm(false)
+      setShowTeamForm(false)
+      const joined = body.registration
       setUserTeam({
-        teamName: teamData.teamName,
-        teamCode: teamData.teamCode,
-        teamSize: teamData.teamSize,
-        members: [
+        teamName: joined?.teamName || teamData.teamName,
+        teamCode: joined?.teamCode || joined?.registrationCode || teamData.teamCode || teamCode.trim().toUpperCase(),
+        teamSize: joined?.teamSize || teamData.teamSize,
+        members: joined?.members || [
           ...(teamData.members || []),
-          { userId: user!.id || user!.uid, name: user!.name || undefined, email: user!.email || undefined, role: 'member', joinedAt: new Date() },
+          { userId: user!.id || user!.uid || '', name: user!.name || undefined, email: user!.email || undefined, role: 'member', joinedAt: new Date() },
         ],
       })
       applyCounts(body.participantCount ?? participantCount + 1, body.spotsLeft)
-      setShowJoinTeamForm(false)
+      void checkUserRegistration()
     } catch (error: unknown) {
       console.error('Join team error:', error)
       let message = 'Failed to join team. Please try again.'
@@ -285,14 +335,54 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
     } finally { setLoading(false) }
   }
 
+  const teamInviteUrl = (code: string) =>
+    `${typeof window !== 'undefined' ? window.location.origin : ''}/events?event=${encodeURIComponent(event.id)}&code=${encodeURIComponent(code)}`
+
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/events?event=${event.id}`
+    const shareUrl = userTeam?.teamCode
+      ? teamInviteUrl(userTeam.teamCode)
+      : `${window.location.origin}/events?event=${event.id}`
     if (navigator.share) {
-      try { await navigator.share({ title: event.title, text: `Check out this event: ${event.title}`, url: shareUrl }); toast.success('Event shared!') } catch (error: unknown) { if ((error as { name?: string })?.name !== 'AbortError') copyToClipboard(shareUrl) }
-    } else { copyToClipboard(shareUrl) }
+      try {
+        await navigator.share({
+          title: event.title,
+          text: userTeam?.teamCode
+            ? `Join my team "${userTeam.teamName}" for ${event.title}. Code: ${userTeam.teamCode}`
+            : `Check out this event: ${event.title}`,
+          url: shareUrl,
+        })
+        toast.success('Shared!')
+      } catch (error: unknown) {
+        if ((error as { name?: string })?.name !== 'AbortError') copyToClipboard(shareUrl, 'Link copied')
+      }
+    } else {
+      copyToClipboard(shareUrl, userTeam?.teamCode ? 'Invite link copied' : 'Event link copied')
+    }
   }
 
-  const copyToClipboard = (text: string) => { navigator.clipboard.writeText(text); toast.success('Event link copied to clipboard!') }
+  const copyToClipboard = (text: string, message = 'Copied to clipboard') => {
+    void navigator.clipboard.writeText(text)
+    toast.success(message)
+  }
+
+  const shareTeamInvite = async () => {
+    if (!userTeam?.teamCode) return
+    const url = teamInviteUrl(userTeam.teamCode)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Join ${userTeam.teamName}`,
+          text: `Join team "${userTeam.teamName}" for ${event.title}. Invite code: ${userTeam.teamCode}`,
+          url,
+        })
+        toast.success('Invite shared!')
+        return
+      } catch (error: unknown) {
+        if ((error as { name?: string })?.name === 'AbortError') return
+      }
+    }
+    copyToClipboard(url, 'Invite link copied — send it to teammates')
+  }
 
   if (!isOpen || !event) return null
 
@@ -302,10 +392,18 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
       ? `${participantCount} / ${event.capacity}${spotsLeft != null ? ` · ${spotsLeft} left` : ''}`
       : `${participantCount} registered`
 
+  const teamSizeChoices = (() => {
+    const raw = Array.isArray(event.teamSizeOptions) ? event.teamSizeOptions : [2, 3, 4]
+    const nums = raw.map(Number).filter(n => Number.isFinite(n) && n >= 1 && n <= 20)
+    const unique = [...new Set(nums.length ? nums : [2, 3, 4])].sort((a, b) => a - b)
+    return unique
+  })()
+
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-40 overflow-y-auto p-4 pt-20 md:pt-24">
+      <div key={`event-modal-${event.id || 'unknown'}`} className="fixed inset-0 z-40 overflow-y-auto p-4 pt-20 md:pt-24">
         <motion.div
+          key="event-modal-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -314,6 +412,7 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
           onClick={onClose}
         />
         <motion.div
+          key="event-modal-panel"
           ref={modalRef}
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -377,8 +476,8 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
                       label: event.capacity != null ? 'Seats' : 'Participants',
                       value: seatsLabel,
                     },
-                  ].map(({ icon: Icon, color, label, value }) => (
-                    <div key={label} className="flex items-start gap-3">
+                  ].map(({ icon: Icon, color, label, value }, i) => (
+                    <div key={`meta-${i}-${label}`} className="flex items-start gap-3">
                       <Icon className={`w-5 h-5 ${color} mt-0.5`} />
                       <div>
                         <div className="text-sm text-gray-500">{label}</div>
@@ -406,26 +505,6 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
               <p className="text-gray-600 dark:text-gray-400">{event.organizers || 'CSI NMAMIT'}</p>
             </div>
 
-            {isTeamEvent && user && isRegistered && userTeam && (
-              <div className="bg-primary-50 dark:bg-gray-800 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <TeamIcon className="w-5 h-5 text-primary-500" />
-                    Your Team
-                  </h3>
-                  <div className="flex items-center gap-2 bg-white dark:bg-gray-700 px-3 py-1 rounded-lg">
-                    <Hash className="w-4 h-4 text-primary-500" />
-                    <span className="font-mono font-semibold">{userTeam.teamCode}</span>
-                    <button onClick={() => copyToClipboard(userTeam.teamCode)} className="ml-2 text-primary-500 hover:text-primary-600">
-                      <Copy className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <p className="text-primary-600 dark:text-primary-400 font-medium mb-2">{userTeam.teamName}</p>
-                <div className="text-sm text-gray-600 dark:text-gray-400">{userTeam.members.length} / {userTeam.teamSize} members</div>
-              </div>
-            )}
-
             {event.registrationsAvailable && (
               <div className="border-t border-gray-100 dark:border-gray-800 pt-6">
                 {!user ? (
@@ -450,20 +529,96 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
                     <Loader className="w-5 h-5 animate-spin" />
                   </div>
                 ) : isRegistered ? (
-                  <div className="text-center space-y-3 rounded-xl p-6 bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-800/50">
-                    <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-                    <p className="font-semibold text-emerald-800 dark:text-emerald-300">You&apos;re registered</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {seatsLabel}. No need to apply again.
-                    </p>
+                  <div className="space-y-4 rounded-xl p-5 bg-emerald-50 dark:bg-emerald-950/30 ring-1 ring-emerald-200 dark:ring-emerald-800/50">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-emerald-800 dark:text-emerald-300">You&apos;re registered</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                          {seatsLabel}. Create / Join is closed for you on this event.
+                        </p>
+                      </div>
+                    </div>
+
                     {isTeamEvent && userTeam && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Team <span className="font-medium">{userTeam.teamName}</span>
-                        {userTeam.teamCode ? <> · code <span className="font-mono font-semibold">{userTeam.teamCode}</span></> : null}
-                      </p>
+                      <div className="rounded-xl bg-white dark:bg-gray-900/60 ring-1 ring-black/5 dark:ring-white/10 p-4 space-y-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-gray-500">Your team</p>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                              <TeamIcon className="w-5 h-5 text-primary-500" />
+                              {userTeam.teamName}
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {(userTeam.members?.length || 0)} / {userTeam.teamSize || '—'} members
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
+                            <Hash className="w-4 h-4 text-primary-500" />
+                            <span className="font-mono font-semibold tracking-wider">{userTeam.teamCode || '—'}</span>
+                            {userTeam.teamCode ? (
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(userTeam.teamCode, 'Team code copied')}
+                                className="ml-1 text-primary-500 hover:text-primary-600"
+                                title="Copy code"
+                              >
+                                <Copy className="w-4 h-4" />
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        {Array.isArray(userTeam.members) && userTeam.members.length > 0 && (
+                          <ul className="space-y-2">
+                            {userTeam.members.map((m, i) => (
+                              <li
+                                key={m.userId || `m-${i}`}
+                                className="flex items-center justify-between text-sm rounded-lg px-3 py-2 bg-gray-50 dark:bg-gray-800/80"
+                              >
+                                <span className="font-medium text-gray-800 dark:text-gray-100">
+                                  {m.name || m.email || 'Member'}
+                                </span>
+                                <span className="text-xs uppercase tracking-wide text-gray-500">
+                                  {m.role || 'member'}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {userTeam.teamCode && (
+                          <div className="space-y-2 pt-1 border-t border-gray-100 dark:border-gray-800">
+                            <p className="text-xs text-gray-500">
+                              Send this link so teammates can open the event and join with your code pre-filled:
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <input
+                                readOnly
+                                value={teamInviteUrl(userTeam.teamCode)}
+                                className="input-field text-xs font-mono flex-1 min-w-0"
+                                onFocus={e => e.target.select()}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => void shareTeamInvite()}
+                                className="px-4 py-2 rounded-lg text-sm font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-100 transition flex items-center justify-center gap-2 shrink-0"
+                              >
+                                <Share2 className="w-4 h-4" />
+                                Copy invite link
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     )}
+
                     {event.allowViewOtherTeams && isTeamEvent && (
-                      <button onClick={() => { setShowOtherTeams(true); fetchOtherTeams() }} className="mt-2 px-4 py-2 rounded-lg text-sm font-semibold bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 ring-1 ring-black/5 dark:ring-white/10">
+                      <button
+                        type="button"
+                        onClick={() => { setShowOtherTeams(true); fetchOtherTeams() }}
+                        className="w-full px-4 py-2 rounded-lg text-sm font-semibold bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 ring-1 ring-black/5 dark:ring-white/10"
+                      >
                         View other teams
                       </button>
                     )}
@@ -499,13 +654,15 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
                           <label className="block text-sm font-medium mb-2">Team Name</label>
                           <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} className="input-field" placeholder="Enter team name" />
                         </div>
-                        <p className="text-xs text-gray-500">You will get a 6-character invite code to share with teammates.</p>
+                        <p className="text-xs text-gray-500">You will get an invite code and a shareable link for teammates.</p>
                         <div>
                           <label className="block text-sm font-medium mb-2">Team Size</label>
-                          <select value={teamSize} onChange={(e) => setTeamSize(parseInt(e.target.value))} className="input-field">
-                            {Array.isArray(event.teamSizeOptions) && event.teamSizeOptions.length
-                              ? event.teamSizeOptions.sort((a: number, b: number) => a-b).map((sz: number) => (<option key={sz} value={sz}>{sz} {sz === 1 ? 'member' : 'members'}</option>))
-                              : [2,3,4].map(sz => (<option key={sz} value={sz}>{sz} members</option>))}
+                          <select value={teamSize} onChange={(e) => setTeamSize(parseInt(e.target.value, 10))} className="input-field">
+                            {teamSizeChoices.map(sz => (
+                              <option key={`size-${sz}`} value={sz}>
+                                {sz} {sz === 1 ? 'member' : 'members'}
+                              </option>
+                            ))}
                           </select>
                         </div>
                         <div className="flex gap-3">
@@ -523,7 +680,7 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
                         <h3 className="font-semibold">Join a Team</h3>
                         <div>
                           <label className="block text-sm font-medium mb-2">Team Code</label>
-                          <input type="text" value={teamCode} onChange={(e) => setTeamCode(e.target.value.toUpperCase())} className="input-field font-mono text-center text-lg" placeholder="XXXXXX" maxLength={6} />
+                          <input type="text" value={teamCode} onChange={(e) => setTeamCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))} className="input-field font-mono text-center text-lg" placeholder="TEAM CODE" maxLength={12} />
                         </div>
                         <div className="flex gap-3">
                           <button onClick={handleJoinTeam} disabled={loading} className="flex-1 px-4 py-2 rounded-lg font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-100 transition">
@@ -586,10 +743,18 @@ const EventDetailsModal = ({ event, isOpen, onClose, onRegistered }: Props) => {
                   </thead>
                   <tbody>
                     {otherTeams.map((t, idx) => (
-                      <tr key={idx} className="border-t border-gray-100 dark:border-gray-700">
+                      <tr
+                        key={t.id || t.teamCode || t.registrationCode || `team-${idx}-${t.teamName || 'x'}`}
+                        className="border-t border-gray-100 dark:border-gray-700"
+                      >
                         <td className="py-2">{t.teamName || '-'}</td>
-                        <td className="py-2 font-mono">{t.teamCode || '-'}</td>
-                        <td className="py-2">{Array.isArray(t.members) ? t.members.length : 0}/{t.teamSize || '-'}</td>
+                        <td className="py-2 font-mono">{t.teamCode || '—'}</td>
+                        <td className="py-2">
+                          {typeof t.memberCount === 'number'
+                            ? t.memberCount
+                            : Array.isArray(t.members) ? t.members.length : 0}
+                          /{t.teamSize || '—'}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

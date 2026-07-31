@@ -27,46 +27,46 @@ const Events = () => {
     refresh,
   } = useEvents('2026')
 
-  // Check for event parameter in URL on mount
+  // Deep link: /events?event=ID[&code=TEAMCODE]
   useEffect(() => {
-    const eventId = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search).get('event')
-    if (eventId && !loading) {
-      // First try to find the event in the current year's events
-      const event = filteredEvents.find(e => e.id === eventId)
-      if (event) {
-        setSelectedEvent(event)
-        setIsModalOpen(true)
-      } else if (filteredEvents.length > 0) {
-        // If not found in current events, try to fetch it by ID
-        const fetchEvent = async () => {
-          try {
-            const eventData = await getEventById(eventId)
-            if (eventData) {
-              setSelectedEvent(eventData)
-              setIsModalOpen(true)
-            }
-          } catch {
-            toast.error('Event not found')
-            router.replace('/events')
-          }
+    if (loading || typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const eventId = params.get('event')
+    if (!eventId) return
+
+    const open = (event: Event | MockEvent) => {
+      setSelectedEvent(event)
+      setIsModalOpen(true)
+    }
+
+    const event = filteredEvents.find(e => e.id === eventId)
+    if (event) {
+      open(event)
+      return
+    }
+    if (filteredEvents.length > 0 || !loading) {
+      void (async () => {
+        try {
+          const eventData = await getEventById(eventId)
+          if (eventData) open(eventData)
+        } catch {
+          toast.error('Event not found')
+          router.replace('/events')
         }
-        fetchEvent()
-      }
+      })()
     }
   }, [filteredEvents, loading, router])
 
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event)
     setIsModalOpen(true)
-    // Update URL without reloading the page
-    router.push(`/events?event=${event.id}`)
+    router.push(`/events?event=${event.id}`, { scroll: false })
   }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setSelectedEvent(null)
-    // Remove event parameter from URL
-    router.replace('/events')
+    router.replace('/events', { scroll: false })
   }
 
   const handleRegistered = useCallback((update: RegistrationUpdate) => {

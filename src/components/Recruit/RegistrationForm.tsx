@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Info, CreditCard, Shield, Loader } from 'lucide-react'
-import { membershipPlans } from '../../data/membershipData'
+import { getPlanTotal, membershipPlans } from '../../data/membershipData'
 import type { AppUser, PaymentFormData } from '../../types'
 
 interface RegistrationFormProps {
@@ -93,11 +93,21 @@ const RegistrationForm = ({
                     <span className="text-gray-300 font-medium">Membership Duration:</span>
                     <span className="text-primary-400 font-bold text-lg">{selectedPlanData.duration}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-300 font-medium">Total Amount:</span>
-                    <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-cyber-blue">
-                      ₹{selectedPlanData.basePrice + selectedPlanData.platformFee}
-                    </span>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between text-gray-300">
+                      <span>Membership fee</span>
+                      <span className="font-medium text-white">₹{selectedPlanData.basePrice}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-gray-300">
+                      <span>Transaction fee</span>
+                      <span className="font-medium text-white">₹{selectedPlanData.platformFee}</span>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-primary-500/20 pt-3">
+                      <span className="text-gray-300 font-medium">Total Amount</span>
+                      <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-cyber-blue">
+                        ₹{getPlanTotal(selectedPlanData)}
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -117,7 +127,7 @@ const RegistrationForm = ({
                   ) : (
                     <>
                       <CreditCard className="w-6 h-6" />
-                      Complete Payment - ₹{selectedPlanData ? (selectedPlanData.basePrice + selectedPlanData.platformFee) : 0}
+                      Complete Payment - ₹{selectedPlanData ? getPlanTotal(selectedPlanData) : 0}
                     </>
                   )}
                 </button>

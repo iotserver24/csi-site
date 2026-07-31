@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { eq, sql } from 'drizzle-orm'
 import { db } from '../../../../../src/db/index'
 import { eventRegistrations, events } from '../../../../../src/db/schema'
+import { secureTeamCode } from '../../../../../src/lib/crypto-util'
+import { clientIp, rateLimit } from '../../../../../src/lib/rate-limit'
 import { jsonError, requireUser } from '../../../../../src/lib/server-auth'
 import { invalidateCache } from '../../../../../src/lib/cache'
 
@@ -50,16 +52,25 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const context = await requireUser(request)
     const { searchParams } = new URL(request.url)
     const rows = await db.select().from(eventRegistrations).where(eq(eventRegistrations.eventId, id))
-    const registrations = searchParams.get('mine') === 'true'
-      ? rows.filter(row => {
-          if (row.userId === context.user.id) return true
-          const members = Array.isArray(row.teamMembers) ? (row.teamMembers as TeamMember[]) : []
-          return members.some(m => m.userId === context.user.id)
-        })
-      : searchParams.get('teams') === 'true'
-        ? rows.filter(row => row.teamName)
-        : rows
-    return NextResponse.json({ registrations: registrations.map(presentRegistration) })
+    const isAdmin = context.role?.role === 'admin'
+
+    // Default: only caller's own registrations (prevents PII dump of all emails)
+    if (searchParams.get('mine') === 'true' || (!searchParams.get('teams') && !isAdmin)) {
+      const mine = rows.filter(row => {
+        if (row.userId === context.user.id) return true
+        const members = Array.isArray(row.teamMembers) ? (row.teamMembers as TeamMember[]) : []
+        return members.some(m => m.userId === context.user.id)
+      })
+      return NextResponse.json({ registrations: mine.map(presentRegistration) })
+    }
+
+    if (searchParams.get('teams') === 'true') {
+      const teams = rows.filter(row => row.teamName).map(publicTeamView)
+      return NextResponse.json({ registrations: teams })
+    }
+
+    // Full list only for admins
+    return NextResponse.json({ registrations: rows.map(presentRegistration) })
   } catch (error) {
     return jsonError(error as Error)
   }
@@ -69,12 +80,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const { id: eventId } = await params
     const context = await requireUser(request)
+    if (!(await rateLimit(`reg:${context.user.id}:${clientIp(request)}`, 20, 60_000))) {
+      return NextResponse.json({ error: 'Too many registration attempts' }, { status: 429 })
+    }
     const event = (await db.select().from(events).where(eq(events.id, eventId)).limit(1))[0]
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     if (!event.registrationsAvailable) return NextResponse.json({ error: 'Registrations are closed' }, { status: 400 })
 
-    const input = await request.json()
-    const displayName = String(input.name || context.user.name || '').trim() || context.user.email
+    const input = await request.json().catch(() => ({}))
+    const displayName = String(input.name || context.user.name || '').trim().slice(0, 100)
+      || context.user.email
     const meta = (event.metadata || {}) as { teamSizeOptions?: number[] }
     const eventType = (event.type || 'INDIVIDUAL').toUpperCase()
 
@@ -136,14 +151,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (input.type === 'team') {
       if (eventType !== 'TEAM') return NextResponse.json({ error: 'Not a team event' }, { status: 400 })
-      const teamName = String(input.teamName || '').trim()
+      const teamName = String(input.teamName || '').trim().slice(0, 80)
       if (!teamName) return NextResponse.json({ error: 'Team name is required' }, { status: 400 })
       let teamSize = Number(input.teamSize) || 2
+      if (!Number.isFinite(teamSize) || teamSize < 2 || teamSize > 20) teamSize = 2
       const allowed = meta.teamSizeOptions
       if (Array.isArray(allowed) && allowed.length && !allowed.map(Number).includes(teamSize)) {
         teamSize = Number(allowed[0]) || 2
       }
-      const code = String(input.teamCode || cryptoRandom()).toUpperCase()
+      // Always generate server-side invite codes (ignore client-supplied codes)
+      const code = secureTeamCode()
 
       const registration = {
         eventId,
@@ -169,7 +186,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       eventId,
       userId: context.user.id,
       email: context.user.email,
-      registrationCode: `IND-${cryptoRandom()}`,
+      registrationCode: `IND-${secureTeamCode()}`,
       teamName: null as string | null,
       teamLeader: null as string | null,
       teamMembers: [] as TeamMember[],
@@ -184,12 +201,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 }
 
-const cryptoRandom = () => Math.random().toString(36).slice(2, 10).toUpperCase()
-
 const presentRegistration = (row: {
   registrationCode?: string | null
   teamMembers?: unknown
   metadata?: unknown
+  email?: string | null
   [key: string]: unknown
 }) => ({
   ...row,
@@ -197,3 +213,22 @@ const presentRegistration = (row: {
   members: row.teamMembers,
   teamSize: (row.metadata as { teamSize?: number } | null | undefined)?.teamSize,
 })
+
+/** Public team listing — no emails, no invite codes. */
+const publicTeamView = (row: {
+  id: string
+  teamName: string | null
+  teamMembers?: unknown
+  metadata?: unknown
+  status?: string | null
+}) => {
+  const members = Array.isArray(row.teamMembers) ? (row.teamMembers as TeamMember[]) : []
+  return {
+    id: row.id,
+    teamName: row.teamName,
+    status: row.status,
+    memberCount: members.length,
+    members: members.map(m => ({ name: m.name || 'Member', role: m.role || 'member' })),
+    teamSize: (row.metadata as { teamSize?: number } | null | undefined)?.teamSize,
+  }
+}

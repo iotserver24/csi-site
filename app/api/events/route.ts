@@ -56,9 +56,30 @@ export async function POST(request: NextRequest) {
   try {
     const context = await requireUser(request)
     requireRole(context, ['admin', 'coreMember'])
-    const input = await request.json()
-    if (!input.id || !input.title) return NextResponse.json({ error: 'id and title are required' }, { status: 400 })
-    const [event] = await db.insert(events).values({ ...input, id: input.id, title: input.title }).returning()
+    const input = await request.json().catch(() => ({}))
+    // Mass-assignment safe: only allow known event columns
+    const title = typeof input.title === 'string' ? input.title.trim().slice(0, 200) : ''
+    const id = typeof input.id === 'string' ? input.id.trim().slice(0, 80) : ''
+    if (!id || !title) return NextResponse.json({ error: 'id and title are required' }, { status: 400 })
+    if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+      return NextResponse.json({ error: 'Invalid event id' }, { status: 400 })
+    }
+    const [event] = await db.insert(events).values({
+      id,
+      title,
+      description: typeof input.description === 'string' ? input.description.slice(0, 10000) : null,
+      date: input.date ? new Date(input.date) : null,
+      year: Number(input.year) || new Date().getFullYear(),
+      type: typeof input.type === 'string' ? input.type.slice(0, 40) : 'INDIVIDUAL',
+      category: typeof input.category === 'string' ? input.category.slice(0, 40) : null,
+      location: typeof input.location === 'string' ? input.location.slice(0, 200) : null,
+      image: typeof input.image === 'string' && input.image.startsWith('https://') ? input.image.slice(0, 500) : null,
+      published: Boolean(input.published),
+      featured: Boolean(input.featured),
+      registrationsAvailable: Boolean(input.registrationsAvailable),
+      capacity: input.capacity != null ? Number(input.capacity) || null : null,
+      metadata: input.metadata && typeof input.metadata === 'object' ? input.metadata : {},
+    }).returning()
     return NextResponse.json({ event }, { status: 201 })
   } catch (error) { return jsonError(error as Error) }
 }

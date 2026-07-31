@@ -1,4 +1,4 @@
-// Membership plans data
+// Membership plans — basePrice is CSI fee; platformFee is transaction/gateway fee
 export const membershipPlans = [
   {
     id: 'one-year',
@@ -57,7 +57,32 @@ export const membershipPlans = [
       'Alumni network access'
     ]
   }
-]
+] as const
+
+export type MembershipPlanId = (typeof membershipPlans)[number]['id']
+export type MembershipPlan = (typeof membershipPlans)[number]
+
+export function getPlanById(planId: string): MembershipPlan | undefined {
+  return membershipPlans.find((p) => p.id === planId)
+}
+
+/** Total charged to member (membership + transaction fee), in rupees */
+export function getPlanTotal(plan: Pick<MembershipPlan, 'basePrice' | 'platformFee'>): number {
+  return plan.basePrice + plan.platformFee
+}
+
+/** Razorpay / UI line-item breakdown (amounts in rupees) */
+export function getPlanPriceBreakdown(plan: MembershipPlan) {
+  return {
+    membership: plan.basePrice,
+    transactionFee: plan.platformFee,
+    total: getPlanTotal(plan),
+    lines: [
+      { name: plan.name, amount: plan.basePrice },
+      { name: 'Transaction fee', amount: plan.platformFee },
+    ] as const,
+  }
+}
 
 // Benefits of joining CSI
 export const membershipBenefits = [

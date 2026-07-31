@@ -37,10 +37,10 @@ const EventsGrid = ({ events, loading, onEventClick }: Props) => {
       }}
     >
       {events.map((event: Event, index: number) => (
-        <EventCard 
-          key={event.id} 
-          event={event} 
-          index={index} 
+        <EventCard
+          key={event.id ? String(event.id) : `event-idx-${index}`}
+          event={event}
+          index={index}
           onClick={onEventClick}
         />
       ))}

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { CheckCircle, Check } from 'lucide-react'
-import { membershipPlans } from '../../data/membershipData'
+import { getPlanTotal, membershipPlans } from '../../data/membershipData'
 
 interface MembershipPlansProps {
   selectedPlan: string
@@ -23,7 +23,7 @@ const MembershipPlans = ({ selectedPlan, setSelectedPlan }: MembershipPlansProps
       
       <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {membershipPlans.map((plan, index) => {
-          const totalPrice = plan.basePrice + plan.platformFee
+          const totalPrice = getPlanTotal(plan)
           const isSelected = selectedPlan === plan.id
           
           return (
@@ -74,8 +74,19 @@ const MembershipPlans = ({ selectedPlan, setSelectedPlan }: MembershipPlansProps
                     <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-cyber-blue mb-2">
                       ₹{totalPrice}
                     </div>
-                    <div className="text-sm text-gray-400">
-                      ₹{plan.basePrice} + ₹{plan.platformFee} fee
+                    <div className="mx-auto max-w-[220px] space-y-1.5 text-left text-sm text-gray-400">
+                      <div className="flex justify-between gap-3">
+                        <span>Membership</span>
+                        <span className="text-gray-300">₹{plan.basePrice}</span>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <span>Transaction fee</span>
+                        <span className="text-gray-300">₹{plan.platformFee}</span>
+                      </div>
+                      <div className="flex justify-between gap-3 border-t border-white/10 pt-1.5 font-medium text-gray-300">
+                        <span>Total</span>
+                        <span>₹{totalPrice}</span>
+                      </div>
                     </div>
                   </div>
 

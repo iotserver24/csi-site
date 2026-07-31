@@ -10,7 +10,9 @@ import {
   usernameFromUsn,
   validateUsername,
 } from '../../../src/utils/username'
+import { sanitizeProfilePatch } from '../../../src/utils/profileValidation'
 import { invalidateCache } from '../../../src/lib/cache'
+import { clientIp, rateLimit } from '../../../src/lib/rate-limit'
 
 const editableFields = [
   'name',
@@ -58,13 +60,23 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const context = await requireUser(request)
-    const input = await request.json()
+    if (!(await rateLimit(`profile:${context.user.id}:${clientIp(request)}`, 30, 60_000))) {
+      return NextResponse.json({ error: 'Too many profile updates' }, { status: 429 })
+    }
+
+    const input = await request.json().catch(() => ({}))
     const profile = input.profile || {}
-    const values = Object.fromEntries(
+    let values = Object.fromEntries(
       editableFields
         .filter(field => input[field] !== undefined || profile[field] !== undefined)
         .map(field => [field, input[field] ?? profile[field] ?? null])
     ) as Record<string, unknown>
+
+    try {
+      values = sanitizeProfilePatch(values)
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message }, { status: 400 })
+    }
 
     const usernameExplicit =
       input.username !== undefined || profile.username !== undefined

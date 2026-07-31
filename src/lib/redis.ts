@@ -1,6 +1,12 @@
 import { Redis } from '@upstash/redis'
 
+const url = process.env.UPSTASH_REDIS_REST_URL
+const token = process.env.UPSTASH_REDIS_REST_TOKEN
+
+/** May be a dummy client if env is missing — callers should try/catch or check env. */
 export const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  url: url || 'https://localhost',
+  token: token || 'missing',
 })
+
+export const redisConfigured = Boolean(url && token)
